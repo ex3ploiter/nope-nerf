@@ -151,27 +151,30 @@ def load_gt_depths(image_list):
      
     return np.stack(depths)
 
-def generate_point_cloud(depth_map, intrinsics):
+def depth_map_to_point_cloud(depth_map, color_image, intrinsics):
     # Get the intrinsic parameters
     fx, fy = intrinsics[0], intrinsics[0]
     cx, cy = intrinsics[1], intrinsics[2]
 
     # Get the height and width of the depth map
-    height, width = depth_map.shape
-
-    # Generate the pixel grid
-    u, v = np.meshgrid(np.arange(width), np.arange(height))
-    
-    # Calculate the x, y, and z coordinates in camera space
-    x = (u - cx) * depth_map / fx
-    y = (v - cy) * depth_map / fy
+    h, w = depth_map.shape
+    u, v = np.meshgrid(np.arange(w), np.arange(h))
     z = depth_map
 
-    # Stack x, y, z coordinates and reshape to a point cloud
-    point_cloud = np.stack((x, y, z), axis=-1)
-    point_cloud = point_cloud.reshape(-1, 3)
+    # Calculate corresponding 3D points
+    x = ((u - cx) * z) / fx
+    y = ((v - cy) * z) / fy
 
-    return point_cloud
+    # Reshape points and color image for stacking
+    points = np.stack((x, y, z), axis=-1)
+    color_points = color_image.reshape((-1, 3))
+
+    # Apply mask to remove invalid depth values
+    mask = (z > 0)
+    points = points[mask]
+    color_points = color_points[mask]
+
+    return points, color_points
 
 def readColmapSceneInfo(path, images, eval, llffhold=8):
     try:
@@ -200,11 +203,15 @@ def readColmapSceneInfo(path, images, eval, llffhold=8):
 
 
 
-    depth_maps=load_gt_depths(glob.glob(os.path.join(path,'dpt','*.png')))
+    depth_maps=load_gt_depths(sorted(glob.glob(os.path.join(path,'images','*.jpg'))))
+    color_maps=load_gt_depths(sorted(glob.glob(os.path.join(path,'dpt','*.png'))))
     
+    
+    print("len() :",len(depth_maps))
     for depth_map in depth_maps:
-        point_cloud=generate_point_cloud(depth_map,cam_intrinsics[1].params)
-        print("point_cloud : ",point_cloud)
+        xyz,rgb=depth_map_to_point_cloud(depth_map,color_maps,cam_intrinsics[1].params)
+        pcd = BasicPointCloud(points=xyz, colors=SH2RGB(rgb), normals=np.zeros((2000, 3)))
+        
 
 
     ply_path = os.path.join(path, "sparse/0/points3D.ply")
