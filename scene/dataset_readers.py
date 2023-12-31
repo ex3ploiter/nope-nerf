@@ -221,14 +221,21 @@ def readColmapSceneInfo(path, images, eval, llffhold=8):
     
     depth_maps=load_gt_depths(sorted(glob.glob(os.path.join(path,'dpt','*.png'))))
     
-    pcds=[]
+    xyzs=[]
+    shss=[]
     
     for depth_map in depth_maps:
         # xyz,rgb=depth_map_to_point_cloud(depth_map=depth_map,color_map=color_map,intrinsics=cam_intrinsics[1].params)
         xyz=depth_map_to_point_cloud(depth_map,cam_intrinsics[1].params)
         shs = np.random.random((xyz.shape[0], 3)) / 255.0
-        pcd = BasicPointCloud(points=xyz, colors=SH2RGB(shs), normals=np.zeros((xyz.shape[0], 3)))
-        pcds.append(pcd)
+
+        xyzs.append(xyz)
+        shss.append(shss)
+    xyzs=np.asarray(xyzs)
+    shss=np.asarray(shss)
+
+    pcd = BasicPointCloud(points=xyzs, colors=SH2RGB(shss), normals=np.zeros((xyz.shape[0], 3)))
+        
         
 
 
@@ -248,7 +255,7 @@ def readColmapSceneInfo(path, images, eval, llffhold=8):
     # except:
     #     pcd = None
 
-    scene_info = SceneInfo(point_cloud=pcds,
+    scene_info = SceneInfo(point_cloud=pcd,
                            train_cameras=train_cam_infos,
                            test_cameras=test_cam_infos,
                            nerf_normalization=nerf_normalization,
