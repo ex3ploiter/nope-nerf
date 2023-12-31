@@ -151,21 +151,23 @@ def load_gt_depths(image_list):
      
     return np.stack(depths)
 
-def depth_map_to_point_cloud(depth_map, color_image, intrinsics):
-    # Get the intrinsic parameters
-    fx, fy = intrinsics[0], intrinsics[0]
-    cx, cy = intrinsics[1], intrinsics[2]
+def generate_point_cloud(depth_map, color_image,intrinsics):
+    # Get the intrinsic paraeters
+    fx, fy = intrinsics[0], intrinsics[1]
+    cx, cy = intrinsics[2], intrinsics[2]
 
     # Get the height and width of the depth map
-    h, w = depth_map.shape[:2]
-    u, v = np.meshgrid(np.arange(w), np.arange(h))
+    height, width = depth_map.shape
+
+    # Generate the pixel grid
+    u, v = np.meshgrid(np.arange(width), np.arange(height))
+    
+    # Calculate the x, y, and z coordinates in camera space
+    x = (u - cx) * depth_map / fx
+    y = (v - cy) * depth_map / fy
     z = depth_map
 
-    # Calculate corresponding 3D points
-    x = ((u - cx) * z) / fx
-    y = ((v - cy) * z) / fy
-
-    # Reshape points and color image for stacking
+    # Stack x, y, z coordinates and reshape to a point cloud
     points = np.stack((x, y, z), axis=-1)
     color_points = color_image.reshape((-1, 3))
 
@@ -208,8 +210,8 @@ def readColmapSceneInfo(path, images, eval, llffhold=8):
     
     
     print("len() :",len(depth_maps))
-    for depth_map in depth_maps:
-        xyz,rgb=depth_map_to_point_cloud(depth_map,color_maps,cam_intrinsics[1].params)
+    for depth_map,color_map in zip(depth_maps,color_maps):
+        xyz,rgb=depth_map_to_point_cloud(depth_map=depth_map,color_map=color_map,intrinsics=cam_intrinsics[1].params)
         pcd = BasicPointCloud(points=xyz, colors=SH2RGB(rgb), normals=np.zeros((2000, 3)))
         
 
