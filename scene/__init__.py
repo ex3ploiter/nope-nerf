@@ -40,11 +40,11 @@ class Scene:
         self.train_cameras = {}
         self.test_cameras = {}
 
-        if os.path.exists(os.path.join('/content/gaussian-splatting', "sparse")):
-            scene_info = sceneLoadTypeCallbacks["Colmap"]('/content/gaussian-splatting', args.images, args.eval)
-        elif os.path.exists(os.path.join('/content/gaussian-splatting', "transforms_train.json")):
+        if os.path.exists(os.path.join('/content/gaussian-splatting/data/Tanks/Ignatius', "sparse")):
+            scene_info = sceneLoadTypeCallbacks["Colmap"]('/content/gaussian-splatting/data/Tanks/Ignatius', args.images, args.eval)
+        elif os.path.exists(os.path.join('/content/gaussian-splatting/data/Tanks/Ignatius', "transforms_train.json")):
             print("Found transforms_train.json file, assuming Blender data set!")
-            scene_info = sceneLoadTypeCallbacks["Blender"]('/content/gaussian-splatting', args.white_background, args.eval)
+            scene_info = sceneLoadTypeCallbacks["Blender"]('/content/gaussian-splatting/data/Tanks/Ignatius', args.white_background, args.eval)
         else:
             assert False, "Could not recognize scene type!"
 
