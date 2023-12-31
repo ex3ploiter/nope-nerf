@@ -29,6 +29,7 @@ from PIL import Image
 import numpy as np
 import imageio
 import cv2
+import glob
 
 class CameraInfo(NamedTuple):
     uid: int
@@ -199,7 +200,7 @@ def readColmapSceneInfo(path, images, eval, llffhold=8):
 
 
 
-    load_gt_depths(os.listdir(os.path.join(path,'dpt')))
+    load_gt_depths(glob.glob(os.path.join(path,'dpt','*.png')))
 
 
     ply_path = os.path.join(path, "sparse/0/points3D.ply")
