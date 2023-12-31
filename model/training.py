@@ -75,7 +75,7 @@ class Trainer(object):
         self.scene_net=scene_net
 
 
-    def train_step(self, data, it=None, epoch=None,scheduling_start=None, render_path=None):
+    def train_step(self, data, it=None, epoch=None,scheduling_start=None, render_path=None,pipe=None,bg=None):
         ''' Performs a training step.
 
         Args:
@@ -95,7 +95,7 @@ class Trainer(object):
         if self.distortion_net:
             self.distortion_net.train()
             self.optimizer_distortion.zero_grad()
-        loss_dict = self.compute_loss(data, it=it, epoch=epoch, scheduling_start=scheduling_start, out_render_path=render_path)
+        loss_dict = self.compute_loss(data, it=it, epoch=epoch, scheduling_start=scheduling_start, out_render_path=render_path,pipe=pipe,bg=bg)
         loss = loss_dict['loss']
         loss.backward()
         self.optimizer.step()
@@ -205,7 +205,7 @@ class Trainer(object):
         else:
             return start_weight + (end_weight - start_weight) * (current - anneal_start_epoch) / anneal_epoches
         
-    def compute_loss(self, data, eval_mode=False, it=None, epoch=None, scheduling_start=None, out_render_path=None):
+    def compute_loss(self, data, eval_mode=False, it=None, epoch=None, scheduling_start=None, out_render_path=None,pipe=None,bg=None):
         ''' Compute the loss.
 
         Args:
@@ -225,7 +225,7 @@ class Trainer(object):
         
         for idx in len(gt_images):
 
-            render_pkg = render(viewpoint_cam[idx], gaussian_net[idx], pipe, bg)
+            render_pkg = render(viewpoint_cam[idx], self.gaussian_net[idx], pipe, bg)
             image, viewspace_point_tensor, visibility_filter, radii = render_pkg["render"], render_pkg["viewspace_points"], render_pkg["visibility_filter"], render_pkg["radii"]
 
             
