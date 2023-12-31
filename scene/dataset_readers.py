@@ -151,12 +151,11 @@ def load_gt_depths(image_list):
      
     return np.stack(depths)
 
-def generate_point_cloud(depth_map, color_image,intrinsics):
+def generate_point_cloud(depth_map,intrinsics):
     # Get the intrinsic paraeters
     fx, fy = intrinsics[0], intrinsics[1]
     cx, cy = intrinsics[2], intrinsics[2]
 
-    # Get the height and width of the depth map
     height, width = depth_map.shape
 
     # Generate the pixel grid
@@ -168,15 +167,10 @@ def generate_point_cloud(depth_map, color_image,intrinsics):
     z = depth_map
 
     # Stack x, y, z coordinates and reshape to a point cloud
-    points = np.stack((x, y, z), axis=-1)
-    color_points = color_image.reshape((-1, 3))
+    point_cloud = np.stack((x, y, z), axis=-1)
+    point_cloud = point_cloud.reshape(-1, 3)
 
-    # Apply mask to remove invalid depth values
-    mask = (z > 0)
-    points = points[mask]
-    color_points = color_points[mask]
-
-    return points, color_points
+    return point_cloud
 
 def readColmapSceneInfo(path, images, eval, llffhold=8):
     try:
@@ -211,8 +205,10 @@ def readColmapSceneInfo(path, images, eval, llffhold=8):
     
     print("len() :",len(depth_maps))
     for depth_map,color_map in zip(depth_maps,color_maps):
-        xyz,rgb=depth_map_to_point_cloud(depth_map=depth_map,color_map=color_map,intrinsics=cam_intrinsics[1].params)
-        pcd = BasicPointCloud(points=xyz, colors=SH2RGB(rgb), normals=np.zeros((2000, 3)))
+        # xyz,rgb=depth_map_to_point_cloud(depth_map=depth_map,color_map=color_map,intrinsics=cam_intrinsics[1].params)
+        xyz=generate_point_cloud(depth_map,cam_intrinsics[1].params)
+        shs = np.random.random((xyz.shape[0], 3)) / 255.0
+        pcd = BasicPointCloud(points=xyz, colors=SH2RGB(shs), normals=np.zeros((xyz.shape[0], 3)))
         
 
 
