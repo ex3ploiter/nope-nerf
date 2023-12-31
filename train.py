@@ -25,7 +25,7 @@ from argparse import ArgumentParser, Namespace
 
 
 
-def train(cfg,lp=None,op=None,pp=None):
+def train(cfg,dataset, opt, pipe):
     logger_py = logging.getLogger(__name__)
 
     # # Fix seeds
@@ -325,5 +325,5 @@ if __name__=='__main__':
     cfg = dl.load_config(args.config, 'configs/default.yaml')
     # backup model
     backup(cfg['training']['out_dir'], args.config)
-    train(cfg=cfg,lp=lp,op=lp,pp=pp)
+    train(cfg=cfg,lp=lp.extract(args),op=op.extract(args),pp=pp.extract(args))
     
