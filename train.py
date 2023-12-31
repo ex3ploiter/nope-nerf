@@ -96,8 +96,8 @@ def train(cfg,dataset, opt, pipe):
     # init distortion parameters
     if cfg['gaussian']['learn_gaussian']:
         # distortion_net = mdl.Learn_Distortion(n_views, cfg['distortion']['learn_scale'], cfg['distortion']['learn_shift'], cfg).to(device=device)
-        gaussian_net=[ GaussianModel(dataset.sh_degree) for _ in range(n_views)]
-        scene_net=[ Scene(dataset, gaussian_net[i]) for i in range(n_views)]
+        gaussian_net=GaussianModel(dataset.sh_degree)
+        scene_net=Scene(dataset, gaussian_net)
 
         # optimizer_distortion = optim.Adam(distortion_net.parameters(), lr=cfg['training']['distortion_lr'])
         optimizer_guassian = optim.Adam(params=[param for model in gaussian_net for param in model.parameters()], lr=cfg['training']['distortion_lr'])

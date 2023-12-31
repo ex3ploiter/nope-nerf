@@ -23,6 +23,13 @@ from plyfile import PlyData, PlyElement
 from utils.sh_utils import SH2RGB
 from scene.gaussian_model import BasicPointCloud
 
+import os
+import torch
+from PIL import Image
+import numpy as np
+import imageio
+import cv2
+
 class CameraInfo(NamedTuple):
     uid: int
     R: np.array
@@ -129,6 +136,42 @@ def storePly(path, xyz, rgb):
     ply_data = PlyData([vertex_element])
     ply_data.write(path)
 
+
+def load_gt_depths(image_list):
+    depths = []
+    for image_name in image_list:
+        
+        # depth_path = os.path.join(datadir, 'depth', '{}.png'.format(frame_id))
+        depth = cv2.imread(image_name, cv2.IMREAD_UNCHANGED)
+        depth = depth.astype(np.float32) / 1000
+        
+        depths.append(depth)
+        
+     
+    return np.stack(depths)
+
+def generate_point_cloud(depth_map, intrinsics):
+    # Get the intrinsic parameters
+    fx, fy = intrinsics[0, 0], intrinsics[1, 1]
+    cx, cy = intrinsics[0, 2], intrinsics[1, 2]
+
+    # Get the height and width of the depth map
+    height, width = depth_map.shape
+
+    # Generate the pixel grid
+    u, v = np.meshgrid(np.arange(width), np.arange(height))
+    
+    # Calculate the x, y, and z coordinates in camera space
+    x = (u - cx) * depth_map / fx
+    y = (v - cy) * depth_map / fy
+    z = depth_map
+
+    # Stack x, y, z coordinates and reshape to a point cloud
+    point_cloud = np.stack((x, y, z), axis=-1)
+    point_cloud = point_cloud.reshape(-1, 3)
+
+    return point_cloud
+
 def readColmapSceneInfo(path, images, eval, llffhold=8):
     try:
         cameras_extrinsic_file = os.path.join(path, "sparse/0", "images.bin")
@@ -153,6 +196,11 @@ def readColmapSceneInfo(path, images, eval, llffhold=8):
         test_cam_infos = []
 
     nerf_normalization = getNerfppNorm(train_cam_infos)
+
+
+
+    load_gt_depths(os.listdir(os.path.join(path,'dpt')))
+
 
     ply_path = os.path.join(path, "sparse/0/points3D.ply")
     bin_path = os.path.join(path, "sparse/0/points3D.bin")
