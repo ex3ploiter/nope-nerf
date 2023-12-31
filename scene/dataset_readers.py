@@ -203,7 +203,7 @@ def readColmapSceneInfo(path, images, eval, llffhold=8):
     depth_maps=load_gt_depths(glob.glob(os.path.join(path,'dpt','*.png')))
     
     for depth_map in depth_maps:
-        generate_point_cloud(depth_map,cam_intrinsics[1].params)
+        point_cloud=generate_point_cloud(depth_map,cam_intrinsics[1].params)
 
 
     ply_path = os.path.join(path, "sparse/0/points3D.ply")
