@@ -151,26 +151,45 @@ def load_gt_depths(image_list):
      
     return np.stack(depths)
 
-def generate_point_cloud(depth_map,intrinsics):
-    # Get the intrinsic paraeters
-    fx, fy = intrinsics[0], intrinsics[1]
-    cx, cy = intrinsics[2], intrinsics[2]
+def load_depths_npz(image_list):
+    depths = []
 
-    height, width = depth_map.shape
+    for image_name in image_list:
+        
+        depth = np.load(image_name)['pred']
+        if depth.shape[0] == 1:
+            depth = depth[0]
 
-    # Generate the pixel grid
-    u, v = np.meshgrid(np.arange(width), np.arange(height))
     
-    # Calculate the x, y, and z coordinates in camera space
-    x = (u - cx) * depth_map / fx
-    y = (v - cy) * depth_map / fy
-    z = depth_map
+    depths.append(depth)
+    depths = np.stack(depths)
+   
+    return depths
 
-    # Stack x, y, z coordinates and reshape to a point cloud
-    point_cloud = np.stack((x, y, z), axis=-1)
-    point_cloud = point_cloud.reshape(-1, 3)
+def depth_map_to_point_cloud(depth_map, intrinsics):
+    # Create a grid of coordinates corresponding to the pixel indices
+    height, width = depth_map.shape
+    u, v = np.meshgrid(np.arange(width), np.arange(height))
 
-    return point_cloud
+    # Flatten the depth map and the u, v coordinates
+    depth = depth_map.flatten()
+    u = u.flatten()
+    v = v.flatten()
+
+    # Convert pixel coordinates to camera coordinates
+    fx, fy = intrinsics[0], intrinsics[0]
+    cx, cy = intrinsics[1], intrinsics[2]
+    x = (u - cx) * depth / fx
+    y = (v - cy) * depth / fy
+    z = depth
+
+    # Stack x, y, z to get the 3D points in camera coordinates
+    points_3d = np.vstack((x, y, z)).transpose()
+
+    # Filter out points with no depth information
+    points_3d = points_3d[depth > 0]
+
+    return points_3d
 
 def readColmapSceneInfo(path, images, eval, llffhold=8):
     try:
@@ -199,35 +218,37 @@ def readColmapSceneInfo(path, images, eval, llffhold=8):
 
 
 
-    depth_maps=load_gt_depths(sorted(glob.glob(os.path.join(path,'images','*.jpg'))))
-    color_maps=load_gt_depths(sorted(glob.glob(os.path.join(path,'dpt','*.png'))))
     
+    depth_maps=load_gt_depths(sorted(glob.glob(os.path.join(path,'dpt','*.png'))))
     
-    print("len() :",len(depth_maps))
-    for depth_map,color_map in zip(depth_maps,color_maps):
+    pcds=[]
+    
+    for depth_map in depth_maps:
         # xyz,rgb=depth_map_to_point_cloud(depth_map=depth_map,color_map=color_map,intrinsics=cam_intrinsics[1].params)
-        xyz=generate_point_cloud(depth_map,cam_intrinsics[1].params)
+        xyz=depth_map_to_point_cloud(depth_map,cam_intrinsics[1].params)
         shs = np.random.random((xyz.shape[0], 3)) / 255.0
         pcd = BasicPointCloud(points=xyz, colors=SH2RGB(shs), normals=np.zeros((xyz.shape[0], 3)))
+        pcds.append(pcd)
         
 
 
     ply_path = os.path.join(path, "sparse/0/points3D.ply")
-    bin_path = os.path.join(path, "sparse/0/points3D.bin")
-    txt_path = os.path.join(path, "sparse/0/points3D.txt")
-    if not os.path.exists(ply_path):
-        print("Converting point3d.bin to .ply, will happen only the first time you open the scene.")
-        try:
-            xyz, rgb, _ = read_points3D_binary(bin_path)
-        except:
-            xyz, rgb, _ = read_points3D_text(txt_path)
-        storePly(ply_path, xyz, rgb)
-    try:
-        pcd = fetchPly(ply_path)
-    except:
-        pcd = None
+    # bin_path = os.path.join(path, "sparse/0/points3D.bin")
+    # txt_path = os.path.join(path, "sparse/0/points3D.txt")
+    # if not os.path.exists(ply_path):
+    #     print("Converting point3d.bin to .ply, will happen only the first time you open the scene.")
+    #     try:
+    #         xyz, rgb, _ = read_points3D_binary(bin_path)
+    #     except:
+    #         xyz, rgb, _ = read_points3D_text(txt_path)
+    # storePly(ply_path, xyz, SH2RGB(shs))
+    
+    # try:
+    #     pcd = fetchPly(ply_path)
+    # except:
+    #     pcd = None
 
-    scene_info = SceneInfo(point_cloud=pcd,
+    scene_info = SceneInfo(point_cloud=pcds,
                            train_cameras=train_cam_infos,
                            test_cameras=test_cam_infos,
                            nerf_normalization=nerf_normalization,
