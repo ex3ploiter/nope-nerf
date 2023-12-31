@@ -15,6 +15,13 @@ import model as mdl
 from utils_poses.comp_ate import compute_ATE, compute_rpe
 from model.common import backup,  mse2psnr
 from utils_poses.align_traj import align_ate_c2b_use_a2b
+
+
+from scene import Scene, GaussianModel
+
+
+
+
 def train(cfg):
     logger_py = logging.getLogger(__name__)
 
@@ -82,82 +89,31 @@ def train(cfg):
     
     
 
-    # init camera extrinsics
-    if cfg['pose']['learn_pose']:
-        if cfg['pose']['init_pose']:
-            if cfg['pose']['init_pose_type']=='gt':
-                init_pose = train_dataset['img'].c2ws 
-            elif cfg['pose']['init_pose_type']=='colmap':
-                init_pose = train_dataset['img'].c2ws_colmap
-            init_pose = init_pose.to(device)
-        else:
-            init_pose = None
-            
-        pose_param_net = mdl.LearnPose(n_views, cfg['pose']['learn_R'], 
-                            cfg['pose']['learn_t'], cfg, init_c2w=init_pose).to(device=device)
-        
-        optimizer_pose = optim.Adam(pose_param_net.parameters(), lr=cfg['training']['pose_lr'])
-        checkpoint_io_pose = mdl.CheckpointIO(out_dir, model=pose_param_net, optimizer=optimizer_pose)
-        try:
-            pose_load_dir = cfg['training']['load_pose_dir']
-            load_dict = checkpoint_io_pose.load(pose_load_dir, load_model_only=cfg['training']['load_ckpt_model_only'])
-        except FileExistsError:
-            load_dict = dict()
-        epoch_it = load_dict.get('epoch_it', -1)
-        if not auto_scheduler:
-            scheduler_pose = torch.optim.lr_scheduler.MultiStepLR(optimizer_pose, 
-                                                                milestones=list(range(scheduling_start, scheduling_epoch+scheduling_start, 100)),
-                                                                gamma=cfg['training']['scheduler_gamma_pose'], last_epoch=epoch_it)
-    else:
-        optimizer_pose = None
-        pose_param_net = None
+    
     # init distortion parameters
-    if cfg['distortion']['learn_distortion']:
-        distortion_net = mdl.Learn_Distortion(n_views, cfg['distortion']['learn_scale'], cfg['distortion']['learn_shift'], cfg).to(device=device)
-        optimizer_distortion = optim.Adam(distortion_net.parameters(), lr=cfg['training']['distortion_lr'])
-        checkpoint_io_distortion = mdl.CheckpointIO(out_dir, model=distortion_net, optimizer=optimizer_distortion)
-        try:
-            distortion_load_dir = cfg['training']['load_distortion_dir']
-            load_dict = checkpoint_io_distortion.load(distortion_load_dir, load_model_only=cfg['training']['load_ckpt_model_only'])
-        except FileExistsError:
-            load_dict = dict()
+    if cfg['gaussian']['learn_gaussian']:
+        # distortion_net = mdl.Learn_Distortion(n_views, cfg['distortion']['learn_scale'], cfg['distortion']['learn_shift'], cfg).to(device=device)
+        gaussian_net=[ GaussianModel(dataset.sh_degree) for _ in range(n_views)]
+        scene_net=[ Scene(dataset, gaussian_net[i]) for i in range(n_views)]
+
+        # optimizer_distortion = optim.Adam(distortion_net.parameters(), lr=cfg['training']['distortion_lr'])
+        optimizer_guassian = optim.Adam(params=[param for model in gaussian_net for param in model.parameters()], lr=cfg['training']['distortion_lr'])
+
+        
+
         epoch_it = load_dict.get('epoch_it', -1)
         if not auto_scheduler:
-            scheduler_distortion = torch.optim.lr_scheduler.MultiStepLR(optimizer_distortion, 
+            scheduler_distortion = torch.optim.lr_scheduler.MultiStepLR(optimizer_guassian, 
                                                                     milestones=list(range(scheduling_start, scheduling_epoch+scheduling_start, 100)),
                                                                     gamma=cfg['training']['scheduler_gamma_distortion'], last_epoch=epoch_it)
-    else:
-        optimizer_distortion = None
-        distortion_net = None
 
-    # init intrinsics 
-    if cfg['pose']['learn_focal']:
-        if cfg['pose']['init_focal_type']=='gt':
-            init_focal=[train_dataset['img'].K[0, 0], -train_dataset['img'].K[1, 1]]
-        else: 
-            init_focal = None
-        focal_net = mdl.LearnFocal(cfg['pose']['update_focal'], cfg['pose']['fx_only'], order=cfg['pose']['focal_order'], init_focal=init_focal).to(device=device)
-        optimizer_focal = torch.optim.Adam(focal_net.parameters(), lr=cfg['training']['focal_lr'])
-        checkpoint_io_focal = mdl.CheckpointIO(out_dir, model=focal_net, optimizer=optimizer_focal)
-        try:
-            focal_load_dir = cfg['training']['load_focal_dir']
-            load_dict = checkpoint_io_focal.load(focal_load_dir)
-        except FileExistsError:
-            load_dict = dict()
-        epoch_it = load_dict.get('epoch_it', -1)
-        if not auto_scheduler:
-            scheduler_focal = torch.optim.lr_scheduler.MultiStepLR(optimizer_focal, milestones=list(range(scheduling_start, scheduling_epoch+scheduling_start, 100)),
-                                                            gamma=cfg['training']['scheduler_gamma_focal'], last_epoch=epoch_it)
-    else:
-        optimizer_focal = None
-        focal_net = None
+
+   
    
      # init training
     training_cfg = cfg['training']
-    trainer = mdl.Trainer(nope_nerf, optimizer, training_cfg, device=device, optimizer_pose=optimizer_pose, 
-                        pose_param_net=pose_param_net, optimizer_focal=optimizer_focal,focal_net=focal_net,
-                        optimizer_distortion=optimizer_distortion,distortion_net=distortion_net, cfg_all=cfg
-                        )
+    trainer = mdl.Trainer(optimizer, training_cfg, device=device,optimizer_guassian=optimizer_guassian , cfg_all=cfg
+                        ,gaussian_net=gaussian_net,scene_net=scene_net)
 
     
     
