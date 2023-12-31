@@ -153,8 +153,8 @@ def load_gt_depths(image_list):
 
 def generate_point_cloud(depth_map, intrinsics):
     # Get the intrinsic parameters
-    fx, fy = intrinsics[0, 0], intrinsics[1, 1]
-    cx, cy = intrinsics[0, 2], intrinsics[1, 2]
+    fx, fy = intrinsics[0], intrinsics[0]
+    cx, cy = intrinsics[1], intrinsics[2]
 
     # Get the height and width of the depth map
     height, width = depth_map.shape
@@ -201,9 +201,9 @@ def readColmapSceneInfo(path, images, eval, llffhold=8):
 
 
     depth_maps=load_gt_depths(glob.glob(os.path.join(path,'dpt','*.png')))
-    print("cam_intrinsics : ",cam_intrinsics)
+    
     for depth_map in depth_maps:
-        generate_point_cloud(depth_map,cam_intrinsics)
+        generate_point_cloud(depth_map,cam_intrinsics[1].params)
 
 
     ply_path = os.path.join(path, "sparse/0/points3D.ply")
