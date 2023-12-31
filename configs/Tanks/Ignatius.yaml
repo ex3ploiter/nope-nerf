@@ -3,7 +3,7 @@ depth:
 pose:
   learn_pose: True
 dataloading:
-  path: data/Tanks
+  path: /content/gaussian-splatting/data/Tanks
   scene: ['Ignatius']
   customized_focal: False
   random_ref: 1

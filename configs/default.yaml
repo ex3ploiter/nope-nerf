@@ -67,6 +67,13 @@ distortion:
   fix_scaleN: True
   learn_scale: True
   learn_shift: True
+
+gaussian:
+  learn_gaussian: True
+  fix_scaleN: True
+  learn_scale: True
+  learn_shift: True  
+  
 training:
   type: nope_nerf
   load_dir: model.pt
