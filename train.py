@@ -325,5 +325,5 @@ if __name__=='__main__':
     cfg = dl.load_config(args.config, 'configs/default.yaml')
     # backup model
     backup(cfg['training']['out_dir'], args.config)
-    train(cfg=cfg,lp=lp.extract(args),op=op.extract(args),pp=pp.extract(args))
+    train(cfg=cfg,dataset=lp.extract(args),opt=op.extract(args),pipe=pp.extract(args))
     
