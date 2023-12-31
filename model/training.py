@@ -11,6 +11,11 @@ from model.common import (
     get_tensor_values, 
      arange_pixels,  project_to_cam, transform_to_world,
 )
+
+
+from gaussian_renderer import render
+
+
 logger_py = logging.getLogger(__name__)
 class Trainer(object):
     def __init__(self, optimizer, cfg, device=None, optimizer_pose=None, pose_param_net=None, 
