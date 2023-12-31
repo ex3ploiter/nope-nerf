@@ -157,7 +157,7 @@ def depth_map_to_point_cloud(depth_map, color_image, intrinsics):
     cx, cy = intrinsics[1], intrinsics[2]
 
     # Get the height and width of the depth map
-    h, w = depth_map.shape
+    h, w = depth_map.shape[:2]
     u, v = np.meshgrid(np.arange(w), np.arange(h))
     z = depth_map
 
