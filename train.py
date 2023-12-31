@@ -17,7 +17,7 @@ from model.common import backup,  mse2psnr
 from utils_poses.align_traj import align_ate_c2b_use_a2b
 
 
-from scene import Scene, GaussianModel
+from gaussian_splatting.scene import Scene, GaussianModel
 
 
 
