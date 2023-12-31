@@ -204,6 +204,7 @@ def readColmapSceneInfo(path, images, eval, llffhold=8):
     
     for depth_map in depth_maps:
         point_cloud=generate_point_cloud(depth_map,cam_intrinsics[1].params)
+        print("point_cloud : ",point_cloud)
 
 
     ply_path = os.path.join(path, "sparse/0/points3D.ply")
