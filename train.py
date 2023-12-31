@@ -18,11 +18,14 @@ from utils_poses.align_traj import align_ate_c2b_use_a2b
 
 
 from scene import Scene, GaussianModel
+from arguments import ModelParams, PipelineParams, OptimizationParams
+from argparse import ArgumentParser, Namespace
 
 
 
 
-def train(cfg):
+
+def train(cfg,lp=None,op=None,pp=None):
     logger_py = logging.getLogger(__name__)
 
     # # Fix seeds
@@ -312,10 +315,15 @@ if __name__=='__main__':
     parser = argparse.ArgumentParser(
         description='Training of nope-nerf model'
     )
+
+    lp = ModelParams(parser)
+    op = OptimizationParams(parser)
+    pp = PipelineParams(parser)
+
     parser.add_argument('config', type=str, help='Path to config file.')
     args = parser.parse_args()
     cfg = dl.load_config(args.config, 'configs/default.yaml')
     # backup model
     backup(cfg['training']['out_dir'], args.config)
-    train(cfg=cfg)
+    train(cfg=cfg,lp=lp,op=lp,pp=pp)
     
