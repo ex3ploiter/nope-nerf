@@ -78,7 +78,7 @@ class Trainer(object):
         self.scene_net=scene_net
 
 
-    def train_step(self, data, it=None, epoch=None,scheduling_start=None, render_path=None,pipe=None,bg=None):
+    def train_step(self, it=None, epoch=None,scheduling_start=None, render_path=None,pipe=None,bg=None):
         ''' Performs a training step.
 
         Args:
@@ -95,7 +95,7 @@ class Trainer(object):
         # loss.backward()
         # self.optimizer.step()
 
-        loss=self.compute_loss(data, it=it, epoch=epoch, scheduling_start=scheduling_start, out_render_path=render_path,pipe=pipe,bg=bg)
+        loss=self.compute_loss( pipe=pipe,bg=bg)
 
        
 
@@ -200,7 +200,7 @@ class Trainer(object):
         else:
             return start_weight + (end_weight - start_weight) * (current - anneal_start_epoch) / anneal_epoches
         
-    def compute_loss(self, data, eval_mode=False, it=None, epoch=None, scheduling_start=None, out_render_path=None,pipe=None,bg=None):
+    def compute_loss(self,pipe=None,bg=None):
         ''' Compute the loss.
 
         Args:
@@ -224,6 +224,8 @@ class Trainer(object):
         loss_total=0
 
         for idx in range(len(viewpoint_stack)):
+            self.optimizer.zero_grad()
+            
             Cam1=viewpoint_stack[idx]
             gt_image = Cam1.original_image.cuda()
             

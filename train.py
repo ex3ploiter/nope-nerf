@@ -84,11 +84,6 @@ def train(cfg,dataset, opt, pipe):
     patient_count = load_dict.get('patient_count', 0)
     scheduling_start = load_dict.get('scheduling_start', cfg['training']['scheduling_start'])
 
-    if not auto_scheduler:
-        scheduler = optim.lr_scheduler.MultiStepLR(
-        optimizer, 
-        milestones=list(range(scheduling_start, scheduling_epoch+scheduling_start, 10)),
-        gamma=cfg['training']['scheduler_gamma'], last_epoch=epoch_it)
     
     
 
@@ -102,7 +97,7 @@ def train(cfg,dataset, opt, pipe):
         
         bg_color = [1, 1, 1] if dataset.white_background else [0, 0, 0]
         background = torch.tensor(bg_color, dtype=torch.float32, device="cuda")
-        bg = torch.rand((3), device="cuda") if opt.random_background else background
+        
 
         # optimizer_distortion = optim.Adam(distortion_net.parameters(), lr=cfg['training']['distortion_lr'])
         # optimizer_guassian = optim.Adam(params=gaussian_net.parameters(), lr=cfg['training']['distortion_lr'])
@@ -163,15 +158,46 @@ def train(cfg,dataset, opt, pipe):
     if eval_pose_every>0:
         gt_poses = train_dataset['img'].c2ws.to(device) 
     # for epoch_it in tqdm(range(epoch_start+1, exit_after), desc='epochs'):
+    
+    
     while epoch_it < (scheduling_start + scheduling_epoch):
-        epoch_it +=1
-        L2_loss_epoch = []
-        pc_loss_epoch = []
-        rgb_s_loss_epoch = []
-        for batch in train_loader:
-            it += 1
-            idx = batch.get('img.idx')
-            trainer.train_step(batch, it, epoch_it, scheduling_start, render_path,pipe=pipe,bg=bg)
+        iteration=epoch_it
+        
+
+        gaussian_net.update_learning_rate(iteration)
+
+        # Every 1000 its we increase the levels of SH up to a maximum degree
+        if iteration % 1000 == 0:
+            gaussian_net.oneupSHdegree()
+
+
+
+        bg = torch.rand((3), device="cuda") if opt.random_background else background
+
+        
+        
+
+        trainer.train_step( it, epoch_it, scheduling_start, render_path,pipe=pipe,bg=bg)
+
+        
+
+        # with torch.no_grad():
+           
+
+          
+            # # Densification
+            # if iteration < opt.densify_until_iter:
+            #     # Keep track of max radii in image-space for pruning
+            #     gaussian_net.max_radii2D[visibility_filter] = torch.max(gaussian_net.max_radii2D[visibility_filter], radii[visibility_filter])
+            #     gaussian_net.add_densification_stats(viewspace_point_tensor, visibility_filter)
+
+            #     if iteration > opt.densify_from_iter and iteration % opt.densification_interval == 0:
+            #         size_threshold = 20 if iteration > opt.opacity_reset_interval else None
+            #         gaussians.densify_and_prune(opt.densify_grad_threshold, 0.005, scene.cameras_extent, size_threshold)
+                
+            #     if iteration % opt.opacity_reset_interval == 0 or (dataset.white_background and iteration == opt.densify_from_iter):
+            #         gaussians.reset_opacity()
+
             
             
             
