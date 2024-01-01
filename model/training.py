@@ -204,7 +204,7 @@ class Trainer(object):
             out_render_path(str): path to save rendered images
         '''
         
-        viewpoint_stack = scene.getTrainCameras().copy()
+        viewpoint_stack = self.scene_net.getTrainCameras().copy()
         viewpoint_cam = viewpoint_stack.pop(randint(0, len(viewpoint_stack)-1))
         gt_image = viewpoint_cam.original_image.cuda()
         print("gt_image : ",gt_image.shape)
