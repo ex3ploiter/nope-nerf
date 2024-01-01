@@ -69,7 +69,7 @@ class Trainer(object):
         self.loss = Loss(cfg)
 
 
-        self.gaussian_net=gaussian_net
+        
         self.scene_net=scene_net
 
 
