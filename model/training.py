@@ -18,8 +18,8 @@ from gaussian_renderer import render
 
 logger_py = logging.getLogger(__name__)
 class Trainer(object):
-    def __init__(self, optimizer, cfg, device=None, optimizer_pose=None, pose_param_net=None, 
-                    optimizer_focal=None, focal_net=None, optimizer_distortion=None,distortion_net=None,gaussian_net=None,scene_net=None, **kwargs):
+    def __init__(self, optimizer, cfg, device=None, 
+                   gaussian_net=None,scene_net=None, **kwargs):
         """model trainer
 
         Args:
@@ -37,12 +37,7 @@ class Trainer(object):
         
         self.optimizer = optimizer
         self.device = device
-        self.optimizer_pose = optimizer_pose
-        self.pose_param_net = pose_param_net
-        self.focal_net = focal_net
-        self.optimizer_focal = optimizer_focal
-        self.distortion_net = distortion_net
-        self.optimizer_distortion = optimizer_distortion
+        
         
         self.n_training_points = cfg['n_training_points']
         self.rendering_technique = cfg['type']

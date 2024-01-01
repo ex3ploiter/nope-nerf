@@ -115,7 +115,7 @@ def train(cfg,dataset, opt, pipe):
    
      # init training
     training_cfg = cfg['training']
-    trainer = mdl.Trainer(gaussian_net.optimizer, training_cfg, device=device,optimizer_guassian=optimizer_guassian , cfg_all=cfg
+    trainer = mdl.Trainer(gaussian_net.optimizer, training_cfg, device=device , cfg_all=cfg
                         ,gaussian_net=gaussian_net,scene_net=scene_net)
 
     
