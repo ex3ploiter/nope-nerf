@@ -247,7 +247,7 @@ def readColmapSceneInfo(path, images, eval, llffhold=8):
         #     xyz, rgb, _ = read_points3D_binary(bin_path)
         # except:
         #     xyz, rgb, _ = read_points3D_text(txt_path)
-    storePly(ply_path, xyz, SH2RGB(shs))
+    storePly(ply_path, xyz_list, SH2RGB(shs_list))
     
     try:
         pcd = fetchPly(ply_path)
