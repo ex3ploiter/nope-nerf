@@ -192,7 +192,8 @@ def train(cfg,dataset, opt, pipe):
             
             
             # -------------
-            
+    print("gaussian_net._rotation.shape : ",gaussian_net._rotation.shape)    
+    print("gaussian_net._scaling.shape : ",gaussian_net._scaling.shape)    
             
     epoch_it=0
     while epoch_it < (scheduling_start + scheduling_epoch):
