@@ -99,6 +99,10 @@ def train(cfg,dataset, opt, pipe):
         gaussian_net=GaussianModel(dataset.sh_degree)
         scene_net=Scene(dataset, gaussian_net)
         gaussian_net.training_setup(opt)
+        
+        bg_color = [1, 1, 1] if dataset.white_background else [0, 0, 0]
+        background = torch.tensor(bg_color, dtype=torch.float32, device="cuda")
+        bg = torch.rand((3), device="cuda") if opt.random_background else background
 
         # optimizer_distortion = optim.Adam(distortion_net.parameters(), lr=cfg['training']['distortion_lr'])
         # optimizer_guassian = optim.Adam(params=gaussian_net.parameters(), lr=cfg['training']['distortion_lr'])
@@ -167,7 +171,7 @@ def train(cfg,dataset, opt, pipe):
         for batch in train_loader:
             it += 1
             idx = batch.get('img.idx')
-            loss_dict = trainer.train_step(batch, it, epoch_it, scheduling_start, render_path)
+            loss_dict = trainer.train_step(batch, it, epoch_it, scheduling_start, render_path,pipe=pipe,bg=bg)
             loss = loss_dict['loss']
             L2_loss_epoch.append(loss_dict['l2_mean'].item())
             pc_loss_epoch.append(loss_dict['loss_pc'].item())
