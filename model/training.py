@@ -221,7 +221,7 @@ class Trainer(object):
         for idx in range(len(viewpoint_stack)):
             Cam1=viewpoint_stack[idx]
             gt_image = Cam1.original_image.cuda()
-            render_pkg = render(Cam1, self.gaussian_net, pipe, bg)
+            render_pkg = render(Cam1, self.gaussian_net, pipe, bg,idx)
             image, viewspace_point_tensor, visibility_filter, radii = render_pkg["render"], render_pkg["viewspace_points"], render_pkg["visibility_filter"], render_pkg["radii"]
             
             
