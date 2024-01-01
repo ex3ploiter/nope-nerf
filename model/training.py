@@ -221,7 +221,7 @@ class Trainer(object):
         for idx in len(viewpoint_stack):
             Cam1=viewpoint_stack[idx]
             gt_image = Cam1.original_image.cuda()
-            render_pkg = render(Cam1, self.gaussian_net[idx], pipe, bg)
+            render_pkg = render(Cam1, self.gaussian_net, pipe, bg)
 
 
         
