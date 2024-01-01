@@ -168,7 +168,7 @@ def train(cfg,dataset, opt, pipe):
             gaussian_net.oneupSHdegree()
         bg = torch.rand((3), device="cuda") if opt.random_background else background
 
-        trainer.train_step(pipe=pipe,bg=bg)
+        trainer.train_step_singleview(pipe=pipe,bg=bg)
 
         epoch_it+=1
 
