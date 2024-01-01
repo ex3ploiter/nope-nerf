@@ -82,7 +82,7 @@ class Trainer(object):
             epoch(int): current number of epochs
             scheduling_start(int): num of epochs to start scheduling
         '''
-        self.model.train()
+        # self.model.train()
         self.optimizer.zero_grad()
         if self.pose_param_net:
            self.pose_param_net.train()
