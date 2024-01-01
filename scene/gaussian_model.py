@@ -100,10 +100,28 @@ class GaussianModel:
     def get_rotation(self):
         return self.rotation_activation(self._rotation)
     
+
+
+    @property
+    def get_scaling_render(self,idx):
+        return self.scaling_activation(self._scaling[idx*1000:(idx+1)*1000])
+    
+    @property
+    def get_rotation_render(self,idx):
+        return self.rotation_activation(self._rotation[idx*1000:(idx+1)*1000])    
+    
+
+
+
     @property
     def get_xyz(self):
         return self._xyz
     
+    @property
+    def get_xyz_render(self,idx):
+        return self._xyz[idx*1000:(idx+1)*1000]
+
+
     @property
     def get_features(self):
         features_dc = self._features_dc
@@ -114,8 +132,16 @@ class GaussianModel:
     def get_opacity(self):
         return self.opacity_activation(self._opacity)
     
+    @property
+    def get_opacity_render(self,idx):
+        return self.opacity_activation(self._opacity[idx*1000:(idx+1)*1000])    
+    
     def get_covariance(self, scaling_modifier = 1):
         return self.covariance_activation(self.get_scaling, scaling_modifier, self._rotation)
+    
+    def get_covariance_render(self, scaling_modifier = 1,idx=0):
+        return self.covariance_activation(self.get_scaling_render(idx), scaling_modifier, self.get_rotation_render(idx))
+
 
     def oneupSHdegree(self):
         if self.active_sh_degree < self.max_sh_degree:
