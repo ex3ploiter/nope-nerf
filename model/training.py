@@ -14,6 +14,9 @@ from model.common import (
 
 
 from gaussian_renderer import render
+import torch
+from torchvision import transforms
+from PIL import Image
 
 
 logger_py = logging.getLogger(__name__)
@@ -208,7 +211,8 @@ class Trainer(object):
         viewpoint_cam = viewpoint_stack.pop(randint(0, len(viewpoint_stack)-1))
         gt_image = viewpoint_cam.original_image.cuda()
         print("gt_image : ",gt_image.shape)
-
+        pil_image = transforms.ToPILImage()(gt_image)
+        pil_image.save('/content/output_image.png')
         
         
         for idx in len(gt_images):
