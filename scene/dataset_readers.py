@@ -129,9 +129,11 @@ def storePly(path, xyz, rgb):
     
     normals = np.zeros_like(xyz)
 
-    elements = np.empty(xyz.shape[0], dtype=dtype)
-    attributes = np.concatenate((xyz, normals, rgb), axis=1)
-    elements[:] = list(map(tuple, attributes))
+    elements = np.empty((xyz.shape[0]*xyz.shape[1]), dtype=dtype)
+    attributes = np.concatenate((xyz, normals, rgb), axis=2)
+    elements[:] = list(map(tuple, attributes.reshape(-1,9)))
+
+
 
     # Create the PlyData object and write to file
     vertex_element = PlyElement.describe(elements, 'vertex')
@@ -167,7 +169,7 @@ def load_depths_npz(image_list):
    
     return depths
 
-def depth_map_to_point_cloud(depth_map, intrinsics):
+def depth_map_to_point_cloud(depth_map, color_image,intrinsics):
     # Create a grid of coordinates corresponding to the pixel indices
     height, width = depth_map.shape
     u, v = np.meshgrid(np.arange(width), np.arange(height))
@@ -185,12 +187,19 @@ def depth_map_to_point_cloud(depth_map, intrinsics):
     z = depth
 
     # Stack x, y, z to get the 3D points in camera coordinates
-    points_3d = np.vstack((x, y, z)).transpose()
+    # points_3d = np.vstack((x, y, z)).transpose()
+    points_3d = np.array([x, y, z]).transpose()
+    color_points = color_image[v, u]
 
     # Filter out points with no depth information
-    points_3d = points_3d[depth > 0]
+    # points_3d = points_3d[depth > 0]
 
-    return points_3d
+    return points_3d,color_points
+def select_random_points(array, num_points_to_select):
+    num_points_in_dimension = array.shape[1]
+    selected_indices = np.random.choice(num_points_in_dimension, num_points_to_select, replace=False)
+    selected_points = array[:, selected_indices, :]
+    return selected_points
 
 def readColmapSceneInfo(path, images, eval, llffhold=8):
     try:
@@ -221,20 +230,41 @@ def readColmapSceneInfo(path, images, eval, llffhold=8):
 
     
     depth_maps=load_gt_depths(sorted(glob.glob(os.path.join(path,'dpt','*.png'))))
+    color_images=load_gt_depths(sorted(glob.glob(os.path.join(path,'images','*.jpg'))))
     
     xyz_list=[]
     shs_list=[]
     
-    # for depth_map in depth_maps:
-    #     # xyz,rgb=depth_map_to_point_cloud(depth_map=depth_map,color_map=color_map,intrinsics=cam_intrinsics[1].params)
-    #     xyz=depth_map_to_point_cloud(depth_map,cam_intrinsics[1].params)
-    #     shs = np.random.random((xyz.shape[0], 3)) / 255.0
-
+    for color_image,depth_map in zip(color_images,depth_maps):
+        # xyz,rgb=depth_map_to_point_cloud(depth_map=depth_map,color_map=color_map,intrinsics=cam_intrinsics[1].params)
+        xyz,color_points=depth_map_to_point_cloud(depth_map,color_image,cam_intrinsics[1].params)
+        xyz_list.append(xyz)
+        shs_list.append(color_points)
         
-    xyz_list = np.random.random((len(depth_maps)*1000, 3)) * 2.6 - 1.3
-    shs_list =  np.random.random((len(depth_maps)*1000, 3)) / 255.0
+        
+        
+        # shs = np.random.random((xyz.shape[0], 3)) / 255.0
+
     
-    pcd = BasicPointCloud(points=xyz_list, colors=SH2RGB(shs_list), normals=np.zeros((len(depth_maps)*1000, 3)))
+    
+    xyz_list=np.array(xyz_list)
+    shs_list=np.array(shs_list)
+    
+    xyz_list=select_random_points(xyz_list,10_000)
+    shs_list=select_random_points(shs_list,10_000)
+    
+    
+    # xyz_list = np.random.random((len(depth_maps)*1000, 3)) * 2.6 - 1.3
+    # shs_list =  np.random.random((len(depth_maps)*1000, 3)) / 255.0
+    
+    
+    # xyz_list = np.random.random((len(depth_maps),1000, 3)) * 2.6 - 1.3
+    # shs_list =  np.random.random((len(depth_maps),1000, 3)) / 255.0
+    normals=np.zeros((xyz_list.shape))
+    
+    print("xyz_list : ",xyz_list.shape)
+    
+    pcd = BasicPointCloud(points=xyz_list, colors=(shs_list), normals=normals)
         
         
 
@@ -250,10 +280,10 @@ def readColmapSceneInfo(path, images, eval, llffhold=8):
         #     xyz, rgb, _ = read_points3D_text(txt_path)
     storePly(ply_path, xyz_list, SH2RGB(shs_list))
     
-    try:
-        pcd = fetchPly(ply_path)
-    except:
-        pcd = None
+    # try:
+    #     pcd = fetchPly(ply_path)
+    # except:
+    #     pcd = None
 
     scene_info = SceneInfo(point_cloud=pcd,
                            train_cameras=train_cam_infos,
