@@ -210,16 +210,26 @@ class Trainer(object):
         viewpoint_stack = self.scene_net.getTrainCameras().copy()
         viewpoint_cam = viewpoint_stack.pop(randint(0, len(viewpoint_stack)-1))
         gt_image = viewpoint_cam.original_image.cuda()
-        print("gt_image : ",gt_image.shape)
+        
+
+
         pil_image = transforms.ToPILImage()(gt_image)
         pil_image.save('/content/output_image.png')
         
-        
-        for idx in len(gt_images):
 
-            render_pkg = render(viewpoint_cam[idx], self.gaussian_net[idx], pipe, bg)
-            image, viewspace_point_tensor, visibility_filter, radii = render_pkg["render"], render_pkg["viewspace_points"], render_pkg["visibility_filter"], render_pkg["radii"]
+
+        for idx in len(viewpoint_stack):
+            Cam1=viewpoint_stack[idx]
+            gt_image = Cam1.original_image.cuda()
+            render_pkg = render(Cam1, self.gaussian_net[idx], pipe, bg)
+
+
+        
+        # for idx in len(gt_images):
+
+        #     render_pkg = render(viewpoint_cam[idx], self.gaussian_net[idx], pipe, bg)
+        #     image, viewspace_point_tensor, visibility_filter, radii = render_pkg["render"], render_pkg["viewspace_points"], render_pkg["visibility_filter"], render_pkg["radii"]
 
             
-            l1_loss(image, gt_image) 
-            loss = (1.0 - opt.lambda_dssim) * Ll1 + opt.lambda_dssim * (1.0 - ssim(image, gt_image))
+        #     l1_loss(image, gt_image) 
+        #     loss = (1.0 - opt.lambda_dssim) * Ll1 + opt.lambda_dssim * (1.0 - ssim(image, gt_image))
