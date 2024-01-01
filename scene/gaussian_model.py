@@ -102,11 +102,11 @@ class GaussianModel:
     
 
 
-    @property
+    
     def get_scaling_render(self,idx):
         return self.scaling_activation(self._scaling[idx*1000:(idx+1)*1000])
     
-    @property
+    
     def get_rotation_render(self,idx):
         return self.rotation_activation(self._rotation[idx*1000:(idx+1)*1000])    
     
@@ -117,7 +117,7 @@ class GaussianModel:
     def get_xyz(self):
         return self._xyz
     
-    @property
+    
     def get_xyz_render(self,idx):
         return self._xyz[idx*1000:(idx+1)*1000]
 
@@ -132,7 +132,7 @@ class GaussianModel:
     def get_opacity(self):
         return self.opacity_activation(self._opacity)
     
-    @property
+    
     def get_opacity_render(self,idx):
         return self.opacity_activation(self._opacity[idx*1000:(idx+1)*1000])    
     
