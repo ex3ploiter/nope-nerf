@@ -239,20 +239,20 @@ def readColmapSceneInfo(path, images, eval, llffhold=8):
 
 
     ply_path = os.path.join(path, "sparse/0/points3D.ply")
-    # bin_path = os.path.join(path, "sparse/0/points3D.bin")
-    # txt_path = os.path.join(path, "sparse/0/points3D.txt")
-    # if not os.path.exists(ply_path):
-    #     print("Converting point3d.bin to .ply, will happen only the first time you open the scene.")
-    #     try:
-    #         xyz, rgb, _ = read_points3D_binary(bin_path)
-    #     except:
-    #         xyz, rgb, _ = read_points3D_text(txt_path)
-    # storePly(ply_path, xyz, SH2RGB(shs))
+    bin_path = os.path.join(path, "sparse/0/points3D.bin")
+    txt_path = os.path.join(path, "sparse/0/points3D.txt")
+    if not os.path.exists(ply_path):
+        print("Converting point3d.bin to .ply, will happen only the first time you open the scene.")
+        # try:
+        #     xyz, rgb, _ = read_points3D_binary(bin_path)
+        # except:
+        #     xyz, rgb, _ = read_points3D_text(txt_path)
+    storePly(ply_path, xyz, SH2RGB(shs))
     
-    # try:
-    #     pcd = fetchPly(ply_path)
-    # except:
-    #     pcd = None
+    try:
+        pcd = fetchPly(ply_path)
+    except:
+        pcd = None
 
     scene_info = SceneInfo(point_cloud=pcd,
                            train_cameras=train_cam_infos,
