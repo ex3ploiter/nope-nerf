@@ -17,6 +17,8 @@ from gaussian_renderer import render
 import torch
 from torchvision import transforms
 from PIL import Image
+from utils.loss_utils import l1_loss, ssim
+
 
 
 logger_py = logging.getLogger(__name__)
@@ -88,14 +90,17 @@ class Trainer(object):
         # self.model.train()
         self.optimizer.zero_grad()
       
-        loss_dict = self.compute_loss(data, it=it, epoch=epoch, scheduling_start=scheduling_start, out_render_path=render_path,pipe=pipe,bg=bg)
-        loss = loss_dict['loss']
-        loss.backward()
-        self.optimizer.step()
+        # loss_dict = self.compute_loss(data, it=it, epoch=epoch, scheduling_start=scheduling_start, out_render_path=render_path,pipe=pipe,bg=bg)
+        # loss = loss_dict['loss']
+        # loss.backward()
+        # self.optimizer.step()
+
+        loss=self.compute_loss(data, it=it, epoch=epoch, scheduling_start=scheduling_start, out_render_path=render_path,pipe=pipe,bg=bg)
+
        
 
 
-        return loss_dict
+        return loss
 
     
     def render_visdata(self, data, resolution, it, out_render_path):
@@ -216,7 +221,7 @@ class Trainer(object):
         pil_image = transforms.ToPILImage()(gt_image)
         pil_image.save('/content/output_image.png')
         
-
+        loss_total=0
 
         for idx in range(len(viewpoint_stack)):
             Cam1=viewpoint_stack[idx]
@@ -228,7 +233,21 @@ class Trainer(object):
             
             transforms.ToPILImage()(gt_image).save('output_image1.png')
             transforms.ToPILImage()(image).save('output_image2.png')
-            break
+
+            Ll1=l1_loss(image, gt_image) 
+            loss = (1.0 - 0.2) * Ll1 + 0.2 * (1.0 - ssim(image, gt_image))
+
+            loss.backward()
+            self.optimizer.step()
+
+            loss_total+=loss
+        
+        print("loss_total: ", loss_total)
+        return loss_total
+
+
+
+            
 
 
 

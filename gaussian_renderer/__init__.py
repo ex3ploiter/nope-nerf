@@ -62,12 +62,12 @@ def render(viewpoint_camera, pc : GaussianModel, pipe, bg_color : torch.Tensor, 
     cov3D_precomp = None
     if pipe.compute_cov3D_python:
         cov3D_precomp = pc.get_covariance_render(scaling_modifier,idx)
-        print("\n\n Hi1 \n\n\n")
+        
     else:
         scales = pc.get_scaling_render(idx)
         rotations = pc.get_rotation_render(idx)
 
-        print("\n\n Hi2 \n\n\n")
+        
 
     # If precomputed colors are provided, use them. Otherwise, if it is desired to precompute colors
     # from SHs in Python, do it. If not, then SH -> RGB conversion will be done by rasterizer.
