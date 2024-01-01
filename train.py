@@ -100,15 +100,15 @@ def train(cfg,dataset, opt, pipe):
         scene_net=Scene(dataset, gaussian_net)
 
         # optimizer_distortion = optim.Adam(distortion_net.parameters(), lr=cfg['training']['distortion_lr'])
-        optimizer_guassian = optim.Adam(params=[param for model in gaussian_net for param in model.parameters()], lr=cfg['training']['distortion_lr'])
+        # optimizer_guassian = optim.Adam(params=gaussian_net.parameters(), lr=cfg['training']['distortion_lr'])
 
         
 
         epoch_it = load_dict.get('epoch_it', -1)
-        if not auto_scheduler:
-            scheduler_distortion = torch.optim.lr_scheduler.MultiStepLR(optimizer_guassian, 
-                                                                    milestones=list(range(scheduling_start, scheduling_epoch+scheduling_start, 100)),
-                                                                    gamma=cfg['training']['scheduler_gamma_distortion'], last_epoch=epoch_it)
+        # if not auto_scheduler:
+        #     scheduler_distortion = torch.optim.lr_scheduler.MultiStepLR(optimizer_guassian, 
+        #                                                             milestones=list(range(scheduling_start, scheduling_epoch+scheduling_start, 100)),
+                                                                    # gamma=cfg['training']['scheduler_gamma_distortion'], last_epoch=epoch_it)
 
 
    
@@ -217,17 +217,7 @@ def train(cfg,dataset, opt, pipe):
                 if cfg['distortion']['learn_distortion']:
                     checkpoint_io_distortion.save('model_distortion.pt', epoch_it=epoch_it, it=it)
 
-            # Backup if necessary
-            if (backup_every > 0 and (it % backup_every) == 0):
-                logger_py.info('Backup checkpoint')
-                checkpoint_io.save('model_%d.pt' % it, epoch_it=epoch_it, it=it,
-                                loss_val_best=metric_val_best, scheduling_start=scheduling_start, patient_count=patient_count)
-                if cfg['pose']['learn_pose']:
-                    checkpoint_io_pose.save('model_pose_%d.pt' % it, epoch_it=epoch_it, it=it)
-                if cfg['pose']['learn_focal']:
-                    checkpoint_io_focal.save('model_focal_%d.pt' % it, epoch_it=epoch_it, it=it)
-                if cfg['distortion']['learn_distortion']:
-                    checkpoint_io_distortion.save('model_distortion_%d.pt' % it, epoch_it=epoch_it, it=it)
+               
 
         pc_loss_epoch = np.mean(pc_loss_epoch)
         logger.add_scalar('train/loss_pc_epoch', pc_loss_epoch, it) 
