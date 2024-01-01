@@ -37,6 +37,7 @@ class Trainer(object):
         
         
         self.model=model
+        self.gaussian_net=self.model
         self.optimizer = optimizer
         self.device = device
         
