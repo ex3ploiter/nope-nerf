@@ -231,8 +231,8 @@ class Trainer(object):
         
 
 
-        pil_image = transforms.ToPILImage()(gt_image)
-        pil_image.save('/content/output_image.png')
+        # pil_image = transforms.ToPILImage()(gt_image)
+        # pil_image.save('/content/output_image.png')
         
         loss_total=0
 
