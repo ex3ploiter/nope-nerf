@@ -162,24 +162,15 @@ def train(cfg,dataset, opt, pipe):
     
     while epoch_it < (scheduling_start + scheduling_epoch):
         iteration=epoch_it
-        
-
         gaussian_net.update_learning_rate(iteration)
-
         # Every 1000 its we increase the levels of SH up to a maximum degree
         if iteration % 1000 == 0:
             gaussian_net.oneupSHdegree()
-
-
-
         bg = torch.rand((3), device="cuda") if opt.random_background else background
 
-        
-        
+        trainer.train_step(pipe=pipe,bg=bg)
 
-        trainer.train_step( it, epoch_it, scheduling_start, render_path,pipe=pipe,bg=bg)
-
-        
+        epoch_it+=1
 
         # with torch.no_grad():
            
@@ -200,8 +191,22 @@ def train(cfg,dataset, opt, pipe):
 
             
             
+            # -------------
             
-               
+            
+    epoch_it=0
+    while epoch_it < (scheduling_start + scheduling_epoch):
+        iteration=epoch_it
+        gaussian_net.update_learning_rate(iteration)
+        # Every 1000 its we increase the levels of SH up to a maximum degree
+        if iteration % 1000 == 0:
+            gaussian_net.oneupSHdegree()
+        bg = torch.rand((3), device="cuda") if opt.random_background else background
+
+        trainer.train_step_singleview( it, epoch_it, scheduling_start, render_path,pipe=pipe,bg=bg)
+
+        epoch_it+=1
+            
 
       
 if __name__=='__main__':

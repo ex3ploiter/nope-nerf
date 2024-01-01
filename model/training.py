@@ -78,31 +78,20 @@ class Trainer(object):
         self.scene_net=scene_net
 
 
-    def train_step(self, it=None, epoch=None,scheduling_start=None, render_path=None,pipe=None,bg=None):
-        ''' Performs a training step.
+    def train_step_singleview(self,pipe=None,bg=None):
 
-        Args:
-            data (dict): data dictionary
-            it (int): training iteration
-            epoch(int): current number of epochs
-            scheduling_start(int): num of epochs to start scheduling
-        '''
-        # self.model.train()
         self.optimizer.zero_grad()
-      
-        # loss_dict = self.compute_loss(data, it=it, epoch=epoch, scheduling_start=scheduling_start, out_render_path=render_path,pipe=pipe,bg=bg)
-        # loss = loss_dict['loss']
-        # loss.backward()
-        # self.optimizer.step()
-
-        loss=self.compute_loss( pipe=pipe,bg=bg)
-
-       
-
-
+        loss=self.compute_loss_singleview( pipe=pipe,bg=bg)
         return loss
 
-    
+
+    def train_step_3dgsTransform(self,pipe=None,bg=None):
+
+        self.optimizer.zero_grad()
+        loss=self.compute_loss_3dgsTransform( pipe=pipe,bg=bg)
+        return loss
+
+
     def render_visdata(self, data, resolution, it, out_render_path):
         (img, dpt, camera_mat, scale_mat, img_idx) = self.process_data_dict(data)
         h, w = resolution
@@ -200,18 +189,11 @@ class Trainer(object):
         else:
             return start_weight + (end_weight - start_weight) * (current - anneal_start_epoch) / anneal_epoches
         
-    def compute_loss(self,pipe=None,bg=None):
-        ''' Compute the loss.
-
-        Args:
-            data (dict): data dictionary
-            eval_mode (bool): whether to use eval mode
-            it (int): training iteration
-            epoch(int): current number of epochs
-            scheduling_start(int): num of epochs to start scheduling
-            out_render_path(str): path to save rendered images
-        '''
-        
+    def compute_loss_3dgsTransform(self,pipe=None,bg=None):
+        pass
+    
+    def compute_loss_singleview(self,pipe=None,bg=None):
+    
         viewpoint_stack = self.scene_net.getTrainCameras().copy()
         viewpoint_cam = viewpoint_stack.pop(randint(0, len(viewpoint_stack)-1))
         gt_image = viewpoint_cam.original_image.cuda()
@@ -225,12 +207,12 @@ class Trainer(object):
 
         for idx in range(len(viewpoint_stack)):
             self.optimizer.zero_grad()
-            
+
             Cam1=viewpoint_stack[idx]
             gt_image = Cam1.original_image.cuda()
             
             render_pkg = render(Cam1, self.gaussian_net, pipe, bg,idx=idx)
-            image, viewspace_point_tensor, visibility_filter, radii = render_pkg["render"], render_pkg["viewspace_points"], render_pkg["visibility_filter"], render_pkg["radii"]
+            image, _, _, _ = render_pkg["render"], render_pkg["viewspace_points"], render_pkg["visibility_filter"], render_pkg["radii"]
             
             
             transforms.ToPILImage()(gt_image).save('output_image1.png')
@@ -255,11 +237,3 @@ class Trainer(object):
 
 
         
-        # for idx in len(gt_images):
-
-        #     render_pkg = render(viewpoint_cam[idx], self.gaussian_net[idx], pipe, bg)
-        #     image, viewspace_point_tensor, visibility_filter, radii = render_pkg["render"], render_pkg["viewspace_points"], render_pkg["visibility_filter"], render_pkg["radii"]
-
-            
-        #     l1_loss(image, gt_image) 
-        #     loss = (1.0 - opt.lambda_dssim) * Ll1 + opt.lambda_dssim * (1.0 - ssim(image, gt_image))
