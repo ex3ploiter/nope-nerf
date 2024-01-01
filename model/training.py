@@ -18,8 +18,8 @@ from gaussian_renderer import render
 
 logger_py = logging.getLogger(__name__)
 class Trainer(object):
-    def __init__(self, optimizer, cfg, device=None, 
-                   gaussian_net=None,scene_net=None, **kwargs):
+    def __init__(self, model,optimizer, cfg, device=None, 
+                   scene_net=None, **kwargs):
         """model trainer
 
         Args:
@@ -35,6 +35,8 @@ class Trainer(object):
             distortion_net (nn.Module, optional): model with distortion parameters. Defaults to None.
         """
         
+        
+        self.model=model
         self.optimizer = optimizer
         self.device = device
         
