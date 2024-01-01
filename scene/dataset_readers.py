@@ -128,9 +128,9 @@ def storePly(path, xyz, rgb):
     
     normals = np.zeros_like(xyz)
 
-    elements = np.empty(xyz.shape[0], dtype=dtype)
+    elements = np.empty((xyz.shape[0],xyz.shape[1]), dtype=dtype)
     attributes = np.concatenate((xyz, normals, rgb), axis=1)
-    elements[:] = list(map(tuple, attributes))
+    elements[:,:] = list(map(tuple, attributes))
 
     # Create the PlyData object and write to file
     vertex_element = PlyElement.describe(elements, 'vertex')
