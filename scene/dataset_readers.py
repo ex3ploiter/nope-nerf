@@ -128,9 +128,9 @@ def storePly(path, xyz, rgb):
     
     normals = np.zeros_like(xyz)
 
-    elements = np.empty((xyz.shape[0],xyz.shape[1]), dtype=dtype)
+    elements = np.empty(xyz.shape[0], dtype=dtype)
     attributes = np.concatenate((xyz, normals, rgb), axis=1)
-    elements[:,:] = list(map(tuple, attributes))
+    elements[:] = list(map(tuple, attributes))
 
     # Create the PlyData object and write to file
     vertex_element = PlyElement.describe(elements, 'vertex')
@@ -230,10 +230,10 @@ def readColmapSceneInfo(path, images, eval, llffhold=8):
     #     shs = np.random.random((xyz.shape[0], 3)) / 255.0
 
         
-    xyz_list = np.random.random((len(depth_maps),1000, 3)) * 2.6 - 1.3
-    shs_list =  np.random.random((len(depth_maps),1000, 3)) / 255.0
+    xyz_list = np.random.random((len(depth_maps)*1000, 3)) * 2.6 - 1.3
+    shs_list =  np.random.random((len(depth_maps)*1000, 3)) / 255.0
     
-    pcd = BasicPointCloud(points=xyz_list, colors=SH2RGB(shs_list), normals=None)
+    pcd = BasicPointCloud(points=xyz_list, colors=SH2RGB(shs_list), normals=np.zeros((len(depth_maps)*1000, 3)))
         
         
 
@@ -247,7 +247,7 @@ def readColmapSceneInfo(path, images, eval, llffhold=8):
         #     xyz, rgb, _ = read_points3D_binary(bin_path)
         # except:
         #     xyz, rgb, _ = read_points3D_text(txt_path)
-    storePly(ply_path, xyz_list, SH2RGB(shs_list))
+    storePly(ply_path, xyz, SH2RGB(shs))
     
     try:
         pcd = fetchPly(ply_path)
