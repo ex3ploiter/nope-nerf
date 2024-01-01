@@ -20,7 +20,7 @@ from utils_poses.align_traj import align_ate_c2b_use_a2b
 from scene import Scene, GaussianModel
 from arguments import ModelParams, PipelineParams, OptimizationParams
 from argparse import ArgumentParser, Namespace
-
+from copy import deepcopy
 
 
 
@@ -192,8 +192,10 @@ def train(cfg,dataset, opt, pipe):
             
             
             # -------------
-    print("gaussian_net._rotation.shape : ",gaussian_net._rotation.shape)    
-    print("gaussian_net._scaling.shape : ",gaussian_net._scaling.shape)    
+
+    
+    local_rot=deepcopy(gaussian_net._rotation)
+    local_scale=deepcopy(gaussian_net._scaling)
             
     epoch_it=0
     while epoch_it < (scheduling_start + scheduling_epoch):
@@ -204,7 +206,7 @@ def train(cfg,dataset, opt, pipe):
             gaussian_net.oneupSHdegree()
         bg = torch.rand((3), device="cuda") if opt.random_background else background
 
-        trainer.train_step_singleview( it, epoch_it, scheduling_start, render_path,pipe=pipe,bg=bg)
+        trainer.train_step_singleview(local_rot, local_scale,pipe=pipe,bg=bg)
 
         epoch_it+=1
             

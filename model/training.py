@@ -85,10 +85,10 @@ class Trainer(object):
         return loss
 
 
-    def train_step_3dgsTransform(self,pipe=None,bg=None):
+    def train_step_3dgsTransform(self,local_rot, local_scale,pipe=None,bg=None):
 
         self.optimizer.zero_grad()
-        loss=self.compute_loss_3dgsTransform( pipe=pipe,bg=bg)
+        loss=self.compute_loss_3dgsTransform( local_rot, local_scale,pipe=pipe,bg=bg)
         return loss
 
 
@@ -189,14 +189,45 @@ class Trainer(object):
         else:
             return start_weight + (end_weight - start_weight) * (current - anneal_start_epoch) / anneal_epoches
         
-    def compute_loss_3dgsTransform(self,pipe=None,bg=None):
-        pass
+    def compute_loss_3dgsTransform(self,local_rot, local_scale,pipe=None,bg=None):
+        viewpoint_stack = self.scene_net.getTrainCameras().copy()
+        # viewpoint_cam = viewpoint_stack.pop(randint(0, len(viewpoint_stack)-1))
+        
+        
+        loss_total=0
+
+        for idx in range(len(viewpoint_stack)):
+            self.optimizer.zero_grad()
+
+            Cam1=viewpoint_stack[idx]
+            Cam2=viewpoint_stack[idx+1]
+            gt_image2 = Cam2.original_image.cuda()
+            
+            render_pkg = render(Cam1, self.gaussian_net, pipe, bg,idx=idx)
+            image, _, _, _ = render_pkg["render"], render_pkg["viewspace_points"], render_pkg["visibility_filter"], render_pkg["radii"]
+            
+            
+            Ll1=l1_loss(image, gt_image2) 
+            loss = (1.0 - 0.2) * Ll1 + 0.2 * (1.0 - ssim(image, gt_image2))
+
+            loss.backward()
+            self.optimizer.step()
+
+            loss_total+=loss
+            
+            
+           
+        
+        print("loss_total: ", loss_total)
+        return loss_total
+  
+        
     
     def compute_loss_singleview(self,pipe=None,bg=None):
     
         viewpoint_stack = self.scene_net.getTrainCameras().copy()
-        viewpoint_cam = viewpoint_stack.pop(randint(0, len(viewpoint_stack)-1))
-        gt_image = viewpoint_cam.original_image.cuda()
+        # viewpoint_cam = viewpoint_stack.pop(randint(0, len(viewpoint_stack)-1))
+        
         
 
 
