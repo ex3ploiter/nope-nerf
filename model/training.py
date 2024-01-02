@@ -230,8 +230,7 @@ class Trainer(object):
             Cam2=viewpoint_stack[idx+1]
             gt_image2 = Cam2.original_image.cuda()
             
-            # render_pkg = render_transform(Cam2, self.gaussian_net, pipe, bg,idx=idx,rot=local_rot[idx],trans=local_trans[idx])
-            render_pkg = render(Cam2, self.gaussian_net, pipe, bg,idx=idx)
+            render_pkg = render_transform(Cam2, self.gaussian_net, pipe, bg,idx=idx,rot=local_rot[idx],trans=local_trans[idx])
             image = render_pkg["render"]
             
             # image, _, _, _ = render_pkg["render"], render_pkg["viewspace_points"], render_pkg["visibility_filter"], render_pkg["radii"]

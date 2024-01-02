@@ -194,8 +194,8 @@ def train(cfg,dataset, opt, pipe):
             # -------------
 
     
-    local_rot=nn.Parameter(torch.tensor(gaussian_net._rotation.detach()).requires_grad_(True))
-    local_trans=nn.Parameter(torch.tensor(gaussian_net._scaling.detach()).requires_grad_(True))
+    local_rot=nn.Parameter(gaussian_net._rotation.requires_grad_(True))
+    local_trans=nn.Parameter(gaussian_net._scaling.requires_grad_(True))
     
     rot_trans_param = [
         {'params': [local_rot], 'lr': 0.001, "name": "rot"},
