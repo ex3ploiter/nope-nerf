@@ -25,6 +25,33 @@ from scipy.spatial.transform import Rotation
 
 from utils.general_utils import build_rotation
 
+
+
+def quaternion_multiply(q1, q2):
+    w1, x1, y1, z1 = q1.unbind(-1)
+    w2, x2, y2, z2 = q2.unbind(-1)
+
+    w = w1 * w2 - x1 * x2 - y1 * y2 - z1 * z2
+    x = w1 * x2 + x1 * w2 + y1 * z2 - z1 * y2
+    y = w1 * y2 - x1 * z2 + y1 * w2 + z1 * x2
+    z = w1 * z2 + x1 * y2 - y1 * x2 + z1 * w2
+
+    return torch.stack((w, x, y, z), -1)
+
+# Function to rotate a vector using a quaternion
+def rotate_vector_with_quaternion(vector, trans,quaternion):
+    # Convert the vector to a quaternion (with a scalar part of zero)
+    vector_quaternion = torch.cat((torch.tensor([0.]), vector))
+
+    # Apply quaternion multiplication to rotate the vector
+    rotated_vector_quaternion = quaternion_multiply(
+        quaternion_multiply(quaternion, vector_quaternion),
+        torch.cat((quaternion[0].unsqueeze(0), -quaternion[1:])),
+    )[1:]  # Extract the vector part from the resulting quaternion
+
+    return rotated_vector_quaternion+trans
+
+
 def transform_vector(vector, translation, rotation_quaternion):
     # rotation = Rotation.from_quat(rotation_quaternion)
     
@@ -125,7 +152,7 @@ class GaussianModel:
     
     
     def get_scaling_transform(self,idx,rot,trans):
-        return self.scaling_activation(transform_vector(self._scaling[idx],trans,rot))
+        return self.scaling_activation(rotate_vector_with_quaternion(self._scaling[idx],trans,rot))
     
     
     def get_rotation_transform(self,idx,rot,trans):
@@ -158,7 +185,8 @@ class GaussianModel:
         return self._xyz[idx]
 
     def get_xyz_transform(self,idx,rot,trans):
-        return transform_vector(self._xyz[idx],trans,rot)
+        # return transform_vector(self._xyz[idx],trans,rot)
+        return rotate_vector_with_quaternion(self._xyz[idx],trans,rot)
     
 
 
