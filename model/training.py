@@ -243,8 +243,7 @@ class Trainer(object):
 
             loss_total+=loss.detach().item()
             
-            torch.cuda.empty_cache()
-            
+            torch.cuda.empty_cache()            
             del render_pkg,Ll1,image,Cam2
             
             
@@ -288,6 +287,11 @@ class Trainer(object):
             self.optimizer.step()
 
             loss_total+=loss
+            
+            
+            torch.cuda.empty_cache()            
+            del render_pkg,Ll1,image,Cam2
+            
         
         print("loss_total: ", loss_total)
         return loss_total

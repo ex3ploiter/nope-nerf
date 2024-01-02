@@ -199,8 +199,8 @@ def train(cfg,dataset, opt, pipe):
     
     local_rot.requires_grad=True
     local_trans.requires_grad=True
-    optimizer_rot = torch.optim.Adam(local_rot.parameters(), lr=0.001, eps=1e-15)
-    optimizer_trans = torch.optim.Adam(local_trans.parameters(), lr=0.001, eps=1e-15)
+    optimizer_rot = torch.optim.Adam(local_rot, lr=0.001, eps=1e-15)
+    optimizer_trans = torch.optim.Adam(local_trans, lr=0.001, eps=1e-15)
             
     epoch_it=0
     while epoch_it < (scheduling_start + scheduling_epoch):
