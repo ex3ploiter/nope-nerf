@@ -195,7 +195,7 @@ def train(cfg,dataset, opt, pipe):
 
     
     local_rot=deepcopy(gaussian_net._rotation)
-    local_scale=deepcopy(gaussian_net._scaling)
+    local_trans=deepcopy(gaussian_net._scaling)
             
     epoch_it=0
     while epoch_it < (scheduling_start + scheduling_epoch):
@@ -206,7 +206,7 @@ def train(cfg,dataset, opt, pipe):
             gaussian_net.oneupSHdegree()
         bg = torch.rand((3), device="cuda") if opt.random_background else background
 
-        trainer.train_step_singleview(local_rot, local_scale,pipe=pipe,bg=bg)
+        trainer.train_step_singleview(local_rot, local_trans,pipe=pipe,bg=bg)
 
         epoch_it+=1
             

@@ -13,15 +13,36 @@ from model.common import (
 )
 
 
-from gaussian_renderer import render
+from gaussian_renderer import render,render_transform
 import torch
 from torchvision import transforms
 from PIL import Image
 from utils.loss_utils import l1_loss, ssim
 
 
+from scipy.stats import multivariate_normal
+from scipy.spatial.transform import Rotation
 
 logger_py = logging.getLogger(__name__)
+
+
+def transform_gaussian(mean, covariance, translation, rotation_quaternion):
+    rotation = Rotation.from_quat(rotation_quaternion)
+    rotation2 = Rotation.from_quat(rotation_quaternion)
+    rotation2_transpose=Rotation.from_matrix(rotation2.as_matrix().T)
+    mean  = rotation.apply(mean) + translation
+    covariance= rotation2_transpose.apply(rotation2.apply(covariance)+translation)+translation
+    return mean,covariance
+
+def transform_vector(vector, translation, rotation_quaternion):
+    rotation = Rotation.from_quat(rotation_quaternion)
+    
+    vector  = rotation.apply(vector) + translation
+    
+    return vector
+
+
+
 class Trainer(object):
     def __init__(self, model,optimizer, cfg, device=None, 
                    scene_net=None, **kwargs):
@@ -189,7 +210,7 @@ class Trainer(object):
         else:
             return start_weight + (end_weight - start_weight) * (current - anneal_start_epoch) / anneal_epoches
         
-    def compute_loss_3dgsTransform(self,local_rot, local_scale,pipe=None,bg=None):
+    def compute_loss_3dgsTransform(self,local_rot, local_trans,pipe=None,bg=None):
         viewpoint_stack = self.scene_net.getTrainCameras().copy()
         # viewpoint_cam = viewpoint_stack.pop(randint(0, len(viewpoint_stack)-1))
         
@@ -198,12 +219,14 @@ class Trainer(object):
 
         for idx in range(len(viewpoint_stack)):
             self.optimizer.zero_grad()
+            
+            
 
             Cam1=viewpoint_stack[idx]
             Cam2=viewpoint_stack[idx+1]
             gt_image2 = Cam2.original_image.cuda()
             
-            render_pkg = render(Cam1, self.gaussian_net, pipe, bg,idx=idx)
+            render_pkg = render_transform(Cam1, self.gaussian_net, pipe, bg,idx=idx,rot=local_rot,trans=local_trans)
             image, _, _, _ = render_pkg["render"], render_pkg["viewspace_points"], render_pkg["visibility_filter"], render_pkg["radii"]
             
             

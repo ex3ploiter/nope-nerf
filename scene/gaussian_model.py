@@ -21,6 +21,15 @@ from simple_knn._C import distCUDA2
 from utils.graphics_utils import BasicPointCloud
 from utils.general_utils import strip_symmetric, build_scaling_rotation
 
+from scipy.spatial.transform import Rotation
+
+def transform_vector(vector, translation, rotation_quaternion):
+    rotation = Rotation.from_quat(rotation_quaternion)
+    
+    vector  = rotation.apply(vector) + translation
+    
+    return vector
+
 class GaussianModel:
 
     def setup_functions(self):
@@ -105,12 +114,16 @@ class GaussianModel:
     
     def get_scaling_render(self,idx):
         return self.scaling_activation(self._scaling[idx])
-    
-    
     def get_rotation_render(self,idx):
-        
         return self.rotation_activation(self._rotation[idx])    
     
+    
+    def get_scaling_transform(self,idx,rot,trans):
+        return self.scaling_activation(transform_vector(self._scaling[idx],trans,rot))
+    
+    
+    def get_rotation_transform(self,idx,rot,trans):
+        return self.rotation_activation(transform_vector(self._rotation[idx],trans,rot)) 
 
 
 
@@ -121,6 +134,11 @@ class GaussianModel:
     
     def get_xyz_render(self,idx):
         return self._xyz[idx]
+
+    def get_xyz_transform(self,idx,rot,trans):
+        return transform_vector(self._xyz[idx],trans,rot)
+    
+
 
 
     @property
@@ -133,6 +151,9 @@ class GaussianModel:
         features_dc = self._features_dc[idx]
         features_rest = self._features_rest[idx]
         return torch.cat((features_dc, features_rest), dim=1)
+
+
+
 
 
     @property
@@ -148,6 +169,12 @@ class GaussianModel:
     
     def get_covariance_render(self, scaling_modifier = 1,idx=0):
         return self.covariance_activation(self.get_scaling_render(idx), scaling_modifier, self.get_rotation_render(idx))
+
+
+
+
+    def get_covariance_transform(self, scaling_modifier = 1,idx=None,rot=None,trans=None):
+        return self.covariance_activation(self.get_scaling_translation(idx,rot,trans), scaling_modifier, self.get_rotation_translation(idx,rot,trans))
 
 
     def oneupSHdegree(self):
