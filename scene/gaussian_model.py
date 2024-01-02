@@ -29,11 +29,7 @@ def transform_vector(vector, translation, rotation_quaternion):
     # rotation = Rotation.from_quat(rotation_quaternion)
     
     # vector  = rotation.apply(vector) + translation
-    print("(rotation_quaternion) : ",(rotation_quaternion).shape)
-    print("build_rotation(rotation_quaternion) : ",build_rotation(rotation_quaternion).shape)
-    print("vector : ",vector.shape)
-    print("translation : ",translation.shape)
-    print("ector.unsqueeze(2) : ",vector.unsqueeze(2).shape)
+
     
     rotated_vector = (build_rotation(rotation_quaternion)@ vector.unsqueeze(2)).squeeze() 
     
