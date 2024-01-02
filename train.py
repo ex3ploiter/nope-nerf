@@ -196,6 +196,9 @@ def train(cfg,dataset, opt, pipe):
     
     local_rot=deepcopy(gaussian_net._rotation)
     local_trans=deepcopy(gaussian_net._scaling)
+    
+    local_rot.requires_grad=True
+    local_trans.requires_grad=True
             
     epoch_it=0
     while epoch_it < (scheduling_start + scheduling_epoch):
