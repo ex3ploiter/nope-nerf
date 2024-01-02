@@ -160,17 +160,17 @@ def train(cfg,dataset, opt, pipe):
     # for epoch_it in tqdm(range(epoch_start+1, exit_after), desc='epochs'):
     
     
-    while epoch_it < (scheduling_start + scheduling_epoch):
-        iteration=epoch_it
-        gaussian_net.update_learning_rate(iteration)
-        # Every 1000 its we increase the levels of SH up to a maximum degree
-        if iteration % 1000 == 0:
-            gaussian_net.oneupSHdegree()
-        bg = torch.rand((3), device="cuda") if opt.random_background else background
+    # while epoch_it < (scheduling_start + scheduling_epoch):
+    #     iteration=epoch_it
+    #     gaussian_net.update_learning_rate(iteration)
+    #     # Every 1000 its we increase the levels of SH up to a maximum degree
+    #     if iteration % 1000 == 0:
+    #         gaussian_net.oneupSHdegree()
+    #     bg = torch.rand((3), device="cuda") if opt.random_background else background
 
-        trainer.train_step_singleview(pipe=pipe,bg=bg)
+    #     trainer.train_step_singleview(pipe=pipe,bg=bg)
 
-        epoch_it+=1
+    #     epoch_it+=1
 
         # with torch.no_grad():
            
@@ -206,7 +206,7 @@ def train(cfg,dataset, opt, pipe):
             gaussian_net.oneupSHdegree()
         bg = torch.rand((3), device="cuda") if opt.random_background else background
 
-        trainer.train_step_singleview(local_rot, local_trans,pipe=pipe,bg=bg)
+        trainer.train_step_3dgsTransform(local_rot, local_trans,pipe=pipe,bg=bg)
 
         epoch_it+=1
             
