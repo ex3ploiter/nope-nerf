@@ -41,8 +41,7 @@ def quaternion_multiply(q1, q2):
 # Function to rotate a vector using a quaternion
 def rotate_vector_with_quaternion(vector, trans,quaternion):
     # Convert the vector to a quaternion (with a scalar part of zero)
-    print("Vector ",vector.shape)
-    print("quaternion ",quaternion.shape)
+    
     
     # vector_quaternion = torch.cat((torch.tensor([0.],device='cuda',requires_grad=True), vector))
     vector_quaternion = torch.cat((torch.zeros((vector.shape[0],1),device='cuda',requires_grad=True), vector),dim=1)
@@ -51,15 +50,13 @@ def rotate_vector_with_quaternion(vector, trans,quaternion):
     rotated_vector_quaternion = quaternion_multiply(
         quaternion_multiply(quaternion, vector_quaternion),
         torch.cat((quaternion[0].unsqueeze(0), -quaternion[1:])),
-    )[1:]  # Extract the vector part from the resulting quaternion
+    )[:,1:]  # Extract the vector part from the resulting quaternion
 
-    print("vector x : ",vector.shape)
-    print("rotated_vector_quaternion : ",rotated_vector_quaternion.shape)
-    print("trans : ",trans.shape)
     
     
     
-    return rotated_vector_quaternion[:,1:]+trans
+    
+    return rotated_vector_quaternion+trans
 
 
 def transform_vector(vector, translation, rotation_quaternion):
