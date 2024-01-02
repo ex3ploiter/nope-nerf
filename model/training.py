@@ -111,7 +111,7 @@ class Trainer(object):
         self.optimizer_rot_trans=optimizer_rot_trans
         
         
-        self.optimizer.zero_grad()
+        self.optimizer_rot_trans.zero_grad()
         loss=self.compute_loss_3dgsTransform( local_rot, local_scale,pipe=pipe,bg=bg)
         return loss
 
@@ -225,12 +225,14 @@ class Trainer(object):
             
             
             
-
+            rot=local_rot[idx]
+            trans=local_trans[idx]
             # Cam1=viewpoint_stack[idx]
+            
             Cam2=viewpoint_stack[idx+1]
             gt_image2 = Cam2.original_image.cuda()
             
-            render_pkg = render_transform(Cam2, self.gaussian_net, pipe, bg,idx=idx,rot=local_rot[idx],trans=local_trans[idx])
+            render_pkg = render_transform(Cam2, self.gaussian_net, pipe, bg,idx=idx,rot=rot,trans=trans)
             image = render_pkg["render"]
             
             # image, _, _, _ = render_pkg["render"], render_pkg["viewspace_points"], render_pkg["visibility_filter"], render_pkg["radii"]

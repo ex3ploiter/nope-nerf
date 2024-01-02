@@ -30,7 +30,6 @@ def transform_vector(vector, translation, rotation_quaternion):
     
     # vector  = rotation.apply(vector) + translation
     
-    
     rotated_vector = (build_rotation(rotation_quaternion)@ vector.unsqueeze(2)).squeeze() 
     
     translated_vector=rotated_vector+translation
