@@ -34,6 +34,7 @@ def rotate_vector_with_quaternion(vector, trans,quaternion):
     
     # vector_quaternion = torch.cat((torch.tensor([0.],device='cuda',requires_grad=True), vector))
     vector_quaternion = torch.cat((torch.zeros((vector.shape[0],1),device='cuda',requires_grad=True), vector),dim=1)
+    print("vector_quaternion ",vector_quaternion.requires_grad)
 
     # Apply quaternion multiplication to rotate the vector
     rotated_vector_quaternion = quaternion_multiply(
