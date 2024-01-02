@@ -230,8 +230,11 @@ class Trainer(object):
             Cam2=viewpoint_stack[idx+1]
             gt_image2 = Cam2.original_image.cuda()
             
-            render_pkg = render_transform(Cam2, self.gaussian_net, pipe, bg,idx=idx,rot=local_rot[idx],trans=local_trans[idx])
-            image, _, _, _ = render_pkg["render"], render_pkg["viewspace_points"], render_pkg["visibility_filter"], render_pkg["radii"]
+            # render_pkg = render_transform(Cam2, self.gaussian_net, pipe, bg,idx=idx,rot=local_rot[idx],trans=local_trans[idx])
+            render_pkg = render(Cam2, self.gaussian_net, pipe, bg,idx=idx)
+            image = render_pkg["render"]
+            
+            # image, _, _, _ = render_pkg["render"], render_pkg["viewspace_points"], render_pkg["visibility_filter"], render_pkg["radii"]
             
             
             Ll1=l1_loss(image, gt_image2) 
@@ -274,7 +277,8 @@ class Trainer(object):
             gt_image = Cam1.original_image.cuda()
             
             render_pkg = render(Cam1, self.gaussian_net, pipe, bg,idx=idx)
-            image, _, _, _ = render_pkg["render"], render_pkg["viewspace_points"], render_pkg["visibility_filter"], render_pkg["radii"]
+            image = render_pkg["render"]
+            # image, _, _, _ = render_pkg["render"], render_pkg["viewspace_points"], render_pkg["visibility_filter"], render_pkg["radii"]
             
             
             transforms.ToPILImage()(gt_image).save('output_image1.png')
