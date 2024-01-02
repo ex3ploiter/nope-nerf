@@ -29,10 +29,12 @@ def transform_vector(vector, translation, rotation_quaternion):
     # rotation = Rotation.from_quat(rotation_quaternion)
     
     # vector  = rotation.apply(vector) + translation
+    print("(rotation_quaternion) : ",(rotation_quaternion).shape)
+    print("build_rotation(rotation_quaternion) : ",build_rotation(rotation_quaternion).shape)
     
     rotated_vector = torch.matmul(build_rotation(rotation_quaternion), vector)
     
-    return vector
+    return rotated_vector
 
 class GaussianModel:
 
