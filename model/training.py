@@ -222,7 +222,7 @@ class Trainer(object):
             
             
 
-            Cam1=viewpoint_stack[idx]
+            # Cam1=viewpoint_stack[idx]
             Cam2=viewpoint_stack[idx+1]
             gt_image2 = Cam2.original_image.cuda()
             
@@ -240,7 +240,7 @@ class Trainer(object):
             
             torch.cuda.empty_cache()
             
-            del render_pkg,
+            del render_pkg,Ll1,image,Cam2
             
             
            
