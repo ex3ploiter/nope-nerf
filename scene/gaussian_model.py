@@ -31,6 +31,7 @@ def transform_vector(vector, translation, rotation_quaternion):
     # vector  = rotation.apply(vector) + translation
     print("(rotation_quaternion) : ",(rotation_quaternion).shape)
     print("build_rotation(rotation_quaternion) : ",build_rotation(rotation_quaternion).shape)
+    print("vector : ",vector.shape)
     
     rotated_vector = torch.matmul(build_rotation(rotation_quaternion), vector)
     
