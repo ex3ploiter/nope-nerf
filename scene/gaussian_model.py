@@ -58,7 +58,7 @@ def rotate_vector_with_quaternion(vector, trans,quaternion):
     print("trans : ",trans.shape)
     
     
-    return rotated_vector_quaternion+trans
+    return rotated_vector_quaternion[:,1:]+trans
 
 
 def transform_vector(vector, translation, rotation_quaternion):
