@@ -213,7 +213,7 @@ class GaussianModel:
 
         # dist2 = torch.clamp_min(distCUDA2(torch.from_numpy(np.asarray(pcd.points)).float().cuda()), 0.0000001)
         dist2 = torch.clamp_min(distCUDA2(torch.from_numpy(np.asarray(pcd.points).reshape(-1,3)).float().cuda()), 0.0000001)
-        dist2=dist2.reshape(fused_point_cloud.shape[0],-1,1)
+        dist2=dist2.reshape(fused_point_cloud.shape[0],-1)
         
         print(" dist2 : ",dist2.shape)
         print(" pcd.points : ",pcd.points.shape)
