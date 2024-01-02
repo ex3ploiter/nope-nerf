@@ -283,8 +283,8 @@ class Trainer(object):
             # image, _, _, _ = render_pkg["render"], render_pkg["viewspace_points"], render_pkg["visibility_filter"], render_pkg["radii"]
             
             
-            transforms.ToPILImage()(gt_image).save('output_image1.png')
-            transforms.ToPILImage()(image).save('output_image2.png')
+            # transforms.ToPILImage()(gt_image).save('output_image1.png')
+            # transforms.ToPILImage()(image).save('output_image2.png')
 
             Ll1=l1_loss(image, gt_image) 
             loss = (1.0 - 0.2) * Ll1 + 0.2 * (1.0 - ssim(image, gt_image))
@@ -296,7 +296,7 @@ class Trainer(object):
             
             
             torch.cuda.empty_cache()            
-            del render_pkg,Ll1,image,Cam1
+            del render_pkg,Ll1,image,Cam1,gt_image,loss
             
         
         print("loss_total: ", loss_total)
@@ -305,9 +305,10 @@ class Trainer(object):
         render_pkg = render(viewpoint_cam, self.gaussian_net, pipe, bg,idx=rnd_number)
         image, viewspace_point_tensor, visibility_filter, radii = render_pkg["render"], render_pkg["viewspace_points"], render_pkg["visibility_filter"], render_pkg["radii"]
         Ll1=l1_loss(image, viewpoint_cam.original_image.cuda()) 
-        loss = (1.0 - 0.2) * Ll1 + 0.2 * (1.0 - ssim(image, gt_image))
+        loss = (1.0 - 0.2) * Ll1 + 0.2 * (1.0 - ssim(image, viewpoint_cam.original_image.cuda()))
 
         loss.backward()
+        
 
 
         

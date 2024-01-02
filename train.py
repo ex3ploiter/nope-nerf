@@ -160,39 +160,40 @@ def train(cfg,dataset, opt, pipe):
     # for epoch_it in tqdm(range(epoch_start+1, exit_after), desc='epochs'):
     
     
-    # while epoch_it < (scheduling_start + scheduling_epoch):
-    #     iteration=epoch_it
-    #     gaussian_net.update_learning_rate(iteration)
-    #     # Every 1000 its we increase the levels of SH up to a maximum degree
-    #     if iteration % 1000 == 0:
-    #         gaussian_net.oneupSHdegree()
-    #     bg = torch.rand((3), device="cuda") if opt.random_background else background
+    while epoch_it < (scheduling_start + scheduling_epoch):
+        iteration=epoch_it
+        gaussian_net.update_learning_rate(iteration)
+        # Every 1000 its we increase the levels of SH up to a maximum degree
+        if iteration % 1000 == 0:
+            gaussian_net.oneupSHdegree()
+        bg = torch.rand((3), device="cuda") if opt.random_background else background
 
-    #     loss,viewspace_point_tensor, visibility_filter, radii=trainer.train_step_singleview(pipe=pipe,bg=bg)
+        loss,viewspace_point_tensor, visibility_filter, radii=trainer.train_step_singleview(pipe=pipe,bg=bg)
 
-    #     epoch_it+=1
+        epoch_it+=1
 
-    #     with torch.no_grad():
+        with torch.no_grad():
            
 
           
-    #         # Densification
-    #         if iteration < opt.densify_until_iter:
-    #             # Keep track of max radii in image-space for pruning
-    #             gaussian_net.max_radii2D[:,visibility_filter] = torch.max(gaussian_net.max_radii2D[:,visibility_filter], radii[visibility_filter])
-    #             gaussian_net.add_densification_stats(viewspace_point_tensor, visibility_filter)
+            # Densification
+            if iteration < opt.densify_until_iter:
+                # Keep track of max radii in image-space for pruning
+                gaussian_net.max_radii2D[:,visibility_filter] = torch.max(gaussian_net.max_radii2D[:,visibility_filter], radii[visibility_filter])
+                gaussian_net.add_densification_stats(viewspace_point_tensor, visibility_filter)
 
-    #             if iteration > opt.densify_from_iter and iteration % opt.densification_interval == 0:
-    #                 size_threshold = 20 if iteration > opt.opacity_reset_interval else None
-    #                 gaussian_net.densify_and_prune(opt.densify_grad_threshold, 0.005, scene_net.cameras_extent, size_threshold)
+                if iteration > opt.densify_from_iter and iteration % opt.densification_interval == 0:
+                    size_threshold = 20 if iteration > opt.opacity_reset_interval else None
+                    gaussian_net.densify_and_prune(opt.densify_grad_threshold, 0.005, scene_net.cameras_extent, size_threshold)
                 
-    #             if iteration % opt.opacity_reset_interval == 0 or (dataset.white_background and iteration == opt.densify_from_iter):
-    #                 gaussian_net.reset_opacity()
+                if iteration % opt.opacity_reset_interval == 0 or (dataset.white_background and iteration == opt.densify_from_iter):
+                    gaussian_net.reset_opacity()
 
             
             
-    #         # -------------
-
+            # -------------
+        del  loss,viewspace_point_tensor, visibility_filter, radii
+        torch.cuda.empty_cache()
 
     
     
