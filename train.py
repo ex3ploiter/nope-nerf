@@ -115,7 +115,7 @@ def train(cfg,dataset, opt, pipe):
    
      # init training
     training_cfg = cfg['training']
-    trainer = mdl.Trainer(model=gaussian_net,optimizer=gaussian_net.optimizer, cfg=training_cfg, device=device , cfg_all=cfg
+    trainer = mdl.Trainer(model=gaussian_net,optimizer=gaussian_net.optimizer,optimizer_Pose=gaussian_net.optimizer_Pose, cfg=training_cfg, device=device , cfg_all=cfg
                         ,scene_net=scene_net)
 
     
@@ -179,7 +179,7 @@ def train(cfg,dataset, opt, pipe):
     #         # Densification
     #         if iteration < opt.densify_until_iter:
     #             # Keep track of max radii in image-space for pruning
-    #             gaussian_net.max_radii2D[visibility_filter] = torch.max(gaussian_net.max_radii2D[visibility_filter], radii[visibility_filter])
+    #             gaussian_net.max_radii2D[:,visibility_filter] = torch.max(gaussian_net.max_radii2D[:,visibility_filter], radii[visibility_filter])
     #             gaussian_net.add_densification_stats(viewspace_point_tensor, visibility_filter)
 
     #             if iteration > opt.densify_from_iter and iteration % opt.densification_interval == 0:

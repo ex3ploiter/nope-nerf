@@ -44,7 +44,7 @@ def transform_vector(vector, translation, rotation_quaternion):
 
 
 class Trainer(object):
-    def __init__(self, model,optimizer, cfg, device=None, 
+    def __init__(self, model,optimizer,optimizer_Pose, cfg, device=None, 
                    scene_net=None, **kwargs):
         """model trainer
 
@@ -65,6 +65,7 @@ class Trainer(object):
         self.model=model
         self.gaussian_net=self.model
         self.optimizer = optimizer
+        self.optimizer_Pose = optimizer_Pose
         self.device = device
         
         
@@ -107,9 +108,9 @@ class Trainer(object):
         return loss, viewspace_point_tensor, visibility_filter, radii
 
 
-    def train_step_3dgsTransform(self,local_rot, local_scale,pipe=None,bg=None,optimizer_rot_trans=None):
+    def train_step_3dgsTransform(self,pipe=None,bg=None):
 
-        self.optimizer_rot_trans=optimizer_rot_trans
+        self.optimizer_Pose.zero_grad()
         
         
         self.optimizer_rot_trans.zero_grad()
@@ -214,7 +215,7 @@ class Trainer(object):
         else:
             return start_weight + (end_weight - start_weight) * (current - anneal_start_epoch) / anneal_epoches
         
-    def compute_loss_3dgsTransform(self,local_rot, local_trans,pipe=None,bg=None):
+    def compute_loss_3dgsTransform(self,pipe=None,bg=None):
         viewpoint_stack = self.scene_net.getTrainCameras().copy()
         # viewpoint_cam = viewpoint_stack.pop(randint(0, len(viewpoint_stack)-1))
         
@@ -222,18 +223,17 @@ class Trainer(object):
         loss_total=0
 
         for idx in range(len(viewpoint_stack)-1):
-            self.optimizer_rot_trans.zero_grad()
+            self.optimizer_Pose.zero_grad()
             
             
             
-            rot=local_rot[idx]
-            trans=local_trans[idx]
+            
             # Cam1=viewpoint_stack[idx]
             
             Cam2=viewpoint_stack[idx+1]
             gt_image2 = Cam2.original_image.cuda()
             
-            render_pkg = render_transform(Cam2, self.gaussian_net, pipe, bg,idx=idx,rot=rot,trans=trans)
+            render_pkg = render_transform(Cam2, self.gaussian_net, pipe, bg,idx=idx)
             image = render_pkg["render"]
             
             # image, _, _, _ = render_pkg["render"], render_pkg["viewspace_points"], render_pkg["visibility_filter"], render_pkg["radii"]
@@ -243,7 +243,7 @@ class Trainer(object):
             loss = (1.0 - 0.2) * Ll1 + 0.2 * (1.0 - ssim(image, gt_image2))
 
             loss.backward()
-            self.optimizer_rot_trans.step()
+            self.optimizer_Pose.step()
             
 
             loss_total+=loss.detach().item()
@@ -304,6 +304,11 @@ class Trainer(object):
         viewpoint_cam = viewpoint_stack.pop(rnd_number)
         render_pkg = render(viewpoint_cam, self.gaussian_net, pipe, bg,idx=rnd_number)
         image, viewspace_point_tensor, visibility_filter, radii = render_pkg["render"], render_pkg["viewspace_points"], render_pkg["visibility_filter"], render_pkg["radii"]
+        Ll1=l1_loss(image, viewpoint_cam.original_image.cuda()) 
+        loss = (1.0 - 0.2) * Ll1 + 0.2 * (1.0 - ssim(image, gt_image))
+
+        loss.backward()
+
 
         
         

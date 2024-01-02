@@ -190,6 +190,13 @@ class GaussianModel:
     
     def get_xyz_render(self,idx):
         return self._xyz[idx]
+    
+    def get_rotation_Local_render(self,idx):
+        return self.rotation_Local[idx]
+    def get_trans_Local_render(self,idx):
+        return self.trans_Local[idx]
+
+
 
     def get_xyz_transform(self,idx,rot,trans):
         # return transform_vector(self._xyz[idx],trans,rot)
@@ -276,15 +283,15 @@ class GaussianModel:
         self._scaling = nn.Parameter(scales.requires_grad_(True))
         self._rotation = nn.Parameter(rots.requires_grad_(True))
         self._opacity = nn.Parameter(opacities.requires_grad_(True))
-        self.max_radii2D = torch.zeros((self.get_xyz.shape[0]), device="cuda")
+        self.max_radii2D = torch.zeros((self.get_xyz.shape[0],self.get_xyz.shape[1]), device="cuda")
         
         self.rotation_Local = nn.Parameter(rots.requires_grad_(True))
         self.trans_Local = nn.Parameter(torch.zeros((fused_point_cloud.shape[0],fused_point_cloud.shape[1], 3), device="cuda").requires_grad_(True))
 
     def training_setup(self, training_args):
         self.percent_dense = training_args.percent_dense
-        self.xyz_gradient_accum = torch.zeros((self.get_xyz.shape[0], 1), device="cuda")
-        self.denom = torch.zeros((self.get_xyz.shape[0], 1), device="cuda")
+        self.xyz_gradient_accum = torch.zeros((self.get_xyz.shape[0],self.get_xyz.shape[1], 1), device="cuda")
+        self.denom = torch.zeros((self.get_xyz.shape[0],self.get_xyz.shape[1], 1), device="cuda")
 
         l = [
             {'params': [self._xyz], 'lr': training_args.position_lr_init * self.spatial_lr_scale, "name": "xyz"},
@@ -295,7 +302,7 @@ class GaussianModel:
             {'params': [self._rotation], 'lr': training_args.rotation_lr, "name": "rotation"}]
         Pose_Param=[    
             {'params': [self.rotation_Local], 'lr': training_args.rotation_lr, "name": "rotation_Local"},
-            {'params': [self.trans_Local], 'lr': training_args._scaling, "name": "trans_Local"}
+            {'params': [self.trans_Local], 'lr': training_args.scaling_lr, "name": "trans_Local"}
         ]
 
         self.optimizer = torch.optim.Adam(l, lr=0.0, eps=1e-15)
@@ -305,7 +312,7 @@ class GaussianModel:
                                                     max_steps=training_args.position_lr_max_steps)
 
 
-        self.optimizer = torch.optim.Adam(Pose_Param, lr=0.0, eps=1e-15)
+        self.optimizer_Pose = torch.optim.Adam(Pose_Param, lr=0.0, eps=1e-15)
 
     def update_learning_rate(self, iteration):
         ''' Learning rate scheduling per step '''
@@ -544,5 +551,5 @@ class GaussianModel:
         torch.cuda.empty_cache()
 
     def add_densification_stats(self, viewspace_point_tensor, update_filter):
-        self.xyz_gradient_accum[update_filter] += torch.norm(viewspace_point_tensor.grad[update_filter,:2], dim=-1, keepdim=True)
-        self.denom[update_filter] += 1
+        self.xyz_gradient_accum[:,update_filter] += torch.norm(viewspace_point_tensor.grad[update_filter,:2], dim=-1, keepdim=True)
+        self.denom[:,update_filter] += 1
