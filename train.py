@@ -204,7 +204,7 @@ def train(cfg,dataset, opt, pipe):
     
     
     
-    optimizer_rot_trans = torch.optim.Adam(rot_trans_param, lr=0.0, eps=1e-15)
+    optimizer_rot_trans = torch.optim.Adam(rot_trans_param, lr=0.1, eps=1e-15)
     
             
     epoch_it=0
