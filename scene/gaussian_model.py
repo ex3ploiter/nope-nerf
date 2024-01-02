@@ -29,11 +29,7 @@ def transform_vector(vector, translation, rotation_quaternion):
     # rotation = Rotation.from_quat(rotation_quaternion)
     
     # vector  = rotation.apply(vector) + translation
-    print("(rotation_quaternion) : ",(rotation_quaternion).shape)
-    print("build_rotation(rotation_quaternion) : ",build_rotation(rotation_quaternion).shape)
-    print("vector : ",vector.shape)
-    print("translation : ",translation.shape)
-    print("vector.unsqueeze(2) : ",vector.unsqueeze(2).shape)
+    
     
     rotated_vector = (build_rotation(rotation_quaternion)@ vector.unsqueeze(2)).squeeze() 
     
@@ -231,11 +227,10 @@ class GaussianModel:
         dist2 = torch.clamp_min(distCUDA2(torch.from_numpy(np.asarray(pcd.points).reshape(-1,3)).float().cuda()), 0.0000001)
         dist2=dist2.reshape(fused_point_cloud.shape[0],-1)
         
-        print(" dist2 : ",dist2.shape)
-        print(" pcd.points : ",pcd.points.shape)
+        
         
         scales = torch.log(torch.sqrt(dist2))[...,None].repeat(1,1,3)
-        print(" scales : ",scales.shape)
+        
         rots = torch.zeros((fused_point_cloud.shape[0],fused_point_cloud.shape[1], 4), device="cuda")
         rots[:,:, 0] = 1
 
