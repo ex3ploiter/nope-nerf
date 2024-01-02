@@ -218,7 +218,7 @@ class GaussianModel:
         print(" dist2 : ",dist2.shape)
         print(" pcd.points : ",pcd.points.shape)
         
-        scales = torch.log(torch.sqrt(dist2))[...,None].repeat(1, 3)
+        scales = torch.log(torch.sqrt(dist2))[...,None].repeat(1,1,3)
         print(" scales : ",scales.shape)
         rots = torch.zeros((fused_point_cloud.shape[0],fused_point_cloud.shape[1], 4), device="cuda")
         rots[:,:, 0] = 1
