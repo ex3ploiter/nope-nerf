@@ -217,7 +217,7 @@ class Trainer(object):
         
         loss_total=0
 
-        for idx in range(len(viewpoint_stack)):
+        for idx in range(len(viewpoint_stack)-1):
             self.optimizer.zero_grad()
             
             
