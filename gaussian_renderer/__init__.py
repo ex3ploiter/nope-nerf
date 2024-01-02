@@ -166,13 +166,13 @@ def render_transform(viewpoint_camera, pc : GaussianModel, pipe, bg_color : torc
     colors_precomp = None
     if override_color is None:
         if pipe.convert_SHs_python:
-            shs_view = pc.get_features_render(idx,rot,trans).transpose(1, 2).view(-1, 3, (pc.max_sh_degree+1)**2)
+            shs_view = pc.get_features_render(idx).transpose(1, 2).view(-1, 3, (pc.max_sh_degree+1)**2)
             dir_pp = (pc.get_xyz_transform(idx,rot,trans) - viewpoint_camera.camera_center.repeat(pc.get_features_render(idx,rot,trans).shape[0], 1))
             dir_pp_normalized = dir_pp/dir_pp.norm(dim=1, keepdim=True)
             sh2rgb = eval_sh(pc.active_sh_degree, shs_view, dir_pp_normalized)
             colors_precomp = torch.clamp_min(sh2rgb + 0.5, 0.0)
         else:
-            shs = pc.get_features_render(idx,rot,trans)
+            shs = pc.get_features_render(idx)
     else:
         colors_precomp = override_color
 
