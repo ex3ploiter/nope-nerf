@@ -23,10 +23,14 @@ from utils.general_utils import strip_symmetric, build_scaling_rotation
 
 from scipy.spatial.transform import Rotation
 
+from utils.general_utils import build_rotation
+
 def transform_vector(vector, translation, rotation_quaternion):
-    rotation = Rotation.from_quat(rotation_quaternion)
+    # rotation = Rotation.from_quat(rotation_quaternion)
     
-    vector  = rotation.apply(vector) + translation
+    # vector  = rotation.apply(vector) + translation
+    
+    rotated_vector = torch.matmul(build_rotation(rotation_quaternion), vector)
     
     return vector
 
