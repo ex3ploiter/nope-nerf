@@ -204,7 +204,7 @@ def render_transform(viewpoint_camera, pc : GaussianModel, pipe, bg_color : torc
             sh2rgb = eval_sh(pc.active_sh_degree, shs_view, dir_pp_normalized)
             colors_precomp = torch.clamp_min(sh2rgb + 0.5, 0.0)
         else:
-            shs = pc.get_features
+            pc.get_features_render(idx)
     else:
         colors_precomp = override_color
 
