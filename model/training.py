@@ -295,7 +295,7 @@ class Trainer(object):
             
             
             torch.cuda.empty_cache()            
-            del render_pkg,Ll1,image,Cam2
+            del render_pkg,Ll1,image,Cam1
             
         
         print("loss_total: ", loss_total)
