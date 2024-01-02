@@ -135,8 +135,8 @@ class GaussianModel:
     
     def get_rotation_transform(self,idx,rot,trans):
         def quat_multiply(quaternion0, quaternion1):
-            w0, x0, y0, z0 = torch.split(quaternion0, 4, dim=-1)
-            w1, x1, y1, z1 = torch.split(quaternion1, 4, dim=-1)
+            w0, x0, y0, z0 = torch.split(quaternion0, 1, dim=-1)
+            w1, x1, y1, z1 = torch.split(quaternion1, 1, dim=-1)
             return torch.cat((
                 -x1 * x0 - y1 * y0 - z1 * z0 + w1 * w0,
                 x1 * w0 + y1 * z0 - z1 * y0 + w1 * x0,
