@@ -213,6 +213,7 @@ def render_transform(viewpoint_camera, pc : GaussianModel, pipe, bg_color : torc
 
     # Rasterize visible Gaussians to image, obtain their radii (on screen). 
     print("means2D : ",means2D.shape)
+    print("means3D : ",means3D.shape)
     
     rendered_image, radii = rasterizer(
         means3D = rotate_vector_with_quaternion(means3D,trans,rot),
