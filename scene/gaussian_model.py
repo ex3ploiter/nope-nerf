@@ -134,7 +134,23 @@ class GaussianModel:
     
     
     def get_rotation_transform(self,idx,rot,trans):
-        return self.rotation_activation(transform_vector(self._rotation[idx],trans,rot)) 
+        def quat_multiply(quaternion0, quaternion1):
+            w0, x0, y0, z0 = np.split(quaternion0, 4, axis=-1)
+            w1, x1, y1, z1 = np.split(quaternion1, 4, axis=-1)
+            return np.concatenate((
+                -x1 * x0 - y1 * y0 - z1 * z0 + w1 * w0,
+                x1 * w0 + y1 * z0 - z1 * y0 + w1 * x0,
+                -x1 * z0 + y1 * w0 + z1 * x0 + w1 * y0,
+                x1 * y0 - y1 * x0 + z1 * w0 + w1 * z0,
+            ), axis=-1)
+            
+        rotations_from_quats = quat_multiply(self._rotation[idx], rot)
+        return rotations_from_quats / np.linalg.norm(rotations_from_quats, axis=-1, keepdims=True)
+        
+        
+        
+        
+        # return self.rotation_activation(transform_vector(self._rotation[idx],trans,rot)) 
 
 
 
