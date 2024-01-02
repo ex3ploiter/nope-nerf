@@ -15,6 +15,39 @@ from diff_gaussian_rasterization import GaussianRasterizationSettings, GaussianR
 from scene.gaussian_model import GaussianModel
 from utils.sh_utils import eval_sh
 
+
+def quaternion_multiply(q1, q2):
+    w1, x1, y1, z1 = q1.unbind(-1)
+    w2, x2, y2, z2 = q2.unbind(-1)
+
+    w = w1 * w2 - x1 * x2 - y1 * y2 - z1 * z2
+    x = w1 * x2 + x1 * w2 + y1 * z2 - z1 * y2
+    y = w1 * y2 - x1 * z2 + y1 * w2 + z1 * x2
+    z = w1 * z2 + x1 * y2 - y1 * x2 + z1 * w2
+
+    return torch.stack((w, x, y, z), -1)
+
+# Function to rotate a vector using a quaternion
+def rotate_vector_with_quaternion(vector, trans,quaternion):
+    # Convert the vector to a quaternion (with a scalar part of zero)
+    
+    
+    # vector_quaternion = torch.cat((torch.tensor([0.],device='cuda',requires_grad=True), vector))
+    vector_quaternion = torch.cat((torch.zeros((vector.shape[0],1),device='cuda',requires_grad=True), vector),dim=1)
+
+    # Apply quaternion multiplication to rotate the vector
+    rotated_vector_quaternion = quaternion_multiply(
+        quaternion_multiply(quaternion, vector_quaternion),
+        torch.cat((quaternion[0].unsqueeze(0), -quaternion[1:])),
+    )[:,1:]  # Extract the vector part from the resulting quaternion
+
+    
+    
+    
+    
+    return rotated_vector_quaternion+trans
+
+
 def render(viewpoint_camera, pc : GaussianModel, pipe, bg_color : torch.Tensor, scaling_modifier = 1.0, override_color = None,idx=None):
     """
     Render the scene. 
@@ -105,6 +138,9 @@ def render(viewpoint_camera, pc : GaussianModel, pipe, bg_color : torch.Tensor, 
     
     
     
+
+
+
 def render_transform(viewpoint_camera, pc : GaussianModel, pipe, bg_color : torch.Tensor, scaling_modifier = 1.0, override_color = None,idx=None,rot=None,trans=None):
     """
     Render the scene. 
@@ -114,7 +150,7 @@ def render_transform(viewpoint_camera, pc : GaussianModel, pipe, bg_color : torc
  
     # Create zero tensor. We will use it to make pytorch return gradients of the 2D (screen-space) means
     
-    screenspace_points = torch.zeros_like(pc.get_xyz_transform(idx,rot,trans), dtype=pc.get_xyz_transform(idx,rot,trans).dtype, requires_grad=True, device="cuda") + 0
+    screenspace_points = torch.zeros_like(pc.get_xyz_render(idx), dtype=pc.get_xyz_render(idx).dtype, requires_grad=True, device="cuda") + 0
     try:
         screenspace_points.retain_grad()
     except:
@@ -141,7 +177,8 @@ def render_transform(viewpoint_camera, pc : GaussianModel, pipe, bg_color : torc
 
     rasterizer = GaussianRasterizer(raster_settings=raster_settings)
 
-    means3D = pc.get_xyz_transform(idx,rot,trans)
+    means3D = pc.get_xyz_render(idx)
+    means3D=rotate_vector_with_quaternion(means3D,trans,rot)
     means2D = screenspace_points
     opacity = pc.get_opacity_render(idx)
 
@@ -152,11 +189,12 @@ def render_transform(viewpoint_camera, pc : GaussianModel, pipe, bg_color : torc
     cov3D_precomp = None
     if pipe.compute_cov3D_python:
         cov3D_precomp = pc.get_covariance_render(scaling_modifier,idx)
-        print("\n\ xxxx \n\n")
         
     else:
-        scales = pc.get_scaling_transform(idx,rot,trans)
-        rotations = pc.get_rotation_transform(idx,rot,trans)
+        scales = pc.get_scaling_render(idx)
+        scales=rotate_vector_with_quaternion(scales,trans,rot)
+        
+        rotations = pc.get_rotation_render(idx)
 
         
 
@@ -167,7 +205,7 @@ def render_transform(viewpoint_camera, pc : GaussianModel, pipe, bg_color : torc
     if override_color is None:
         if pipe.convert_SHs_python:
             shs_view = pc.get_features_render(idx).transpose(1, 2).view(-1, 3, (pc.max_sh_degree+1)**2)
-            dir_pp = (pc.get_xyz_transform(idx,rot,trans) - viewpoint_camera.camera_center.repeat(pc.get_features_render(idx,rot,trans).shape[0], 1))
+            dir_pp = (rotate_vector_with_quaternion(pc.get_xyz_render(idx),trans,rot) - viewpoint_camera.camera_center.repeat(pc.get_features_render(idx).shape[0], 1))
             dir_pp_normalized = dir_pp/dir_pp.norm(dim=1, keepdim=True)
             sh2rgb = eval_sh(pc.active_sh_degree, shs_view, dir_pp_normalized)
             colors_precomp = torch.clamp_min(sh2rgb + 0.5, 0.0)
@@ -192,4 +230,7 @@ def render_transform(viewpoint_camera, pc : GaussianModel, pipe, bg_color : torc
     return {"render": rendered_image,
             "viewspace_points": screenspace_points,
             "visibility_filter" : radii > 0,
-            "radii": radii}    
+            "radii": radii}
+    
+    
+    
