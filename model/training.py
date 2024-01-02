@@ -113,8 +113,8 @@ class Trainer(object):
         self.optimizer_Pose.zero_grad()
         
         
-        self.optimizer_rot_trans.zero_grad()
-        loss=self.compute_loss_3dgsTransform( local_rot, local_scale,pipe=pipe,bg=bg)
+        
+        loss=self.compute_loss_3dgsTransform( pipe=pipe,bg=bg)
         return loss
 
 

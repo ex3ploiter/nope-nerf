@@ -142,7 +142,7 @@ def render(viewpoint_camera, pc : GaussianModel, pipe, bg_color : torch.Tensor, 
 
 
 
-def render_transform(viewpoint_camera, pc : GaussianModel, pipe, bg_color : torch.Tensor, scaling_modifier = 1.0, override_color = None,idx=None,rot=None,trans=None):
+def render_transform(viewpoint_camera, pc : GaussianModel, pipe, bg_color : torch.Tensor, scaling_modifier = 1.0, override_color = None,idx=None):
     """
     Render the scene. 
     
@@ -213,6 +213,10 @@ def render_transform(viewpoint_camera, pc : GaussianModel, pipe, bg_color : torc
         colors_precomp = override_color
 
     # Rasterize visible Gaussians to image, obtain their radii (on screen). 
+    
+    
+    trans=pc.get_trans_Local_render(idx)
+    rot=pc.get_rotation_Local_render(idx)
     
     rendered_image, radii = rasterizer(
         means3D = rotate_vector_with_quaternion(means3D,trans,rot),
