@@ -106,8 +106,11 @@ class Trainer(object):
         return loss
 
 
-    def train_step_3dgsTransform(self,local_rot, local_scale,pipe=None,bg=None):
+    def train_step_3dgsTransform(self,local_rot, local_scale,pipe=None,bg=None,optimizer_rot=None,optimizer_trans=None):
 
+        self.optimizer_rot=optimizer_rot
+        self.optimizer_trans=optimizer_trans
+        
         self.optimizer.zero_grad()
         loss=self.compute_loss_3dgsTransform( local_rot, local_scale,pipe=pipe,bg=bg)
         return loss
@@ -218,7 +221,8 @@ class Trainer(object):
         loss_total=0
 
         for idx in range(len(viewpoint_stack)-1):
-            self.optimizer.zero_grad()
+            self.optimizer_rot.zero_grad()
+            self.optimizer_trans.zero_grad()
             
             
 
@@ -234,7 +238,8 @@ class Trainer(object):
             loss = (1.0 - 0.2) * Ll1 + 0.2 * (1.0 - ssim(image, gt_image2))
 
             loss.backward()
-            self.optimizer.step()
+            self.optimizer_rot.step()
+            self.optimizer_trans.step()
 
             loss_total+=loss.detach().item()
             
