@@ -277,6 +277,9 @@ class GaussianModel:
         self._rotation = nn.Parameter(rots.requires_grad_(True))
         self._opacity = nn.Parameter(opacities.requires_grad_(True))
         self.max_radii2D = torch.zeros((self.get_xyz.shape[0]), device="cuda")
+        
+        self.rotation_Local = nn.Parameter(rots.requires_grad_(True))
+        self.trans_Local = nn.Parameter(torch.zeros((fused_point_cloud.shape[0],fused_point_cloud.shape[1], 3), device="cuda").requires_grad_(True))
 
     def training_setup(self, training_args):
         self.percent_dense = training_args.percent_dense
@@ -289,7 +292,10 @@ class GaussianModel:
             {'params': [self._features_rest], 'lr': training_args.feature_lr / 20.0, "name": "f_rest"},
             {'params': [self._opacity], 'lr': training_args.opacity_lr, "name": "opacity"},
             {'params': [self._scaling], 'lr': training_args.scaling_lr, "name": "scaling"},
-            {'params': [self._rotation], 'lr': training_args.rotation_lr, "name": "rotation"}
+            {'params': [self._rotation], 'lr': training_args.rotation_lr, "name": "rotation"}]
+        Pose_Param=[    
+            {'params': [self.rotation_Local], 'lr': training_args.rotation_lr, "name": "rotation_Local"},
+            {'params': [self.trans_Local], 'lr': training_args._scaling, "name": "trans_Local"}
         ]
 
         self.optimizer = torch.optim.Adam(l, lr=0.0, eps=1e-15)
@@ -297,6 +303,9 @@ class GaussianModel:
                                                     lr_final=training_args.position_lr_final*self.spatial_lr_scale,
                                                     lr_delay_mult=training_args.position_lr_delay_mult,
                                                     max_steps=training_args.position_lr_max_steps)
+
+
+        self.optimizer = torch.optim.Adam(Pose_Param, lr=0.0, eps=1e-15)
 
     def update_learning_rate(self, iteration):
         ''' Learning rate scheduling per step '''

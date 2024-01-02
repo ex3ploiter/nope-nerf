@@ -168,30 +168,30 @@ def train(cfg,dataset, opt, pipe):
     #         gaussian_net.oneupSHdegree()
     #     bg = torch.rand((3), device="cuda") if opt.random_background else background
 
-    #     trainer.train_step_singleview(pipe=pipe,bg=bg)
+    #     loss,viewspace_point_tensor, visibility_filter, radii=trainer.train_step_singleview(pipe=pipe,bg=bg)
 
     #     epoch_it+=1
 
-        # with torch.no_grad():
+    #     with torch.no_grad():
            
 
           
-            # # Densification
-            # if iteration < opt.densify_until_iter:
-            #     # Keep track of max radii in image-space for pruning
-            #     gaussian_net.max_radii2D[visibility_filter] = torch.max(gaussian_net.max_radii2D[visibility_filter], radii[visibility_filter])
-            #     gaussian_net.add_densification_stats(viewspace_point_tensor, visibility_filter)
+    #         # Densification
+    #         if iteration < opt.densify_until_iter:
+    #             # Keep track of max radii in image-space for pruning
+    #             gaussian_net.max_radii2D[visibility_filter] = torch.max(gaussian_net.max_radii2D[visibility_filter], radii[visibility_filter])
+    #             gaussian_net.add_densification_stats(viewspace_point_tensor, visibility_filter)
 
-            #     if iteration > opt.densify_from_iter and iteration % opt.densification_interval == 0:
-            #         size_threshold = 20 if iteration > opt.opacity_reset_interval else None
-            #         gaussians.densify_and_prune(opt.densify_grad_threshold, 0.005, scene.cameras_extent, size_threshold)
+    #             if iteration > opt.densify_from_iter and iteration % opt.densification_interval == 0:
+    #                 size_threshold = 20 if iteration > opt.opacity_reset_interval else None
+    #                 gaussian_net.densify_and_prune(opt.densify_grad_threshold, 0.005, scene_net.cameras_extent, size_threshold)
                 
-            #     if iteration % opt.opacity_reset_interval == 0 or (dataset.white_background and iteration == opt.densify_from_iter):
-            #         gaussians.reset_opacity()
+    #             if iteration % opt.opacity_reset_interval == 0 or (dataset.white_background and iteration == opt.densify_from_iter):
+    #                 gaussian_net.reset_opacity()
 
             
             
-            # -------------
+    #         # -------------
 
     
     local_rot=nn.Parameter(gaussian_net._rotation.requires_grad_(True))

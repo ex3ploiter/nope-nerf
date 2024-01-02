@@ -102,8 +102,9 @@ class Trainer(object):
     def train_step_singleview(self,pipe=None,bg=None):
 
         self.optimizer.zero_grad()
-        loss=self.compute_loss_singleview( pipe=pipe,bg=bg)
-        return loss
+        loss,viewspace_point_tensor, visibility_filter, radii=self.compute_loss_singleview( pipe=pipe,bg=bg)
+        # return loss
+        return loss, viewspace_point_tensor, visibility_filter, radii
 
 
     def train_step_3dgsTransform(self,local_rot, local_scale,pipe=None,bg=None,optimizer_rot_trans=None):
@@ -299,9 +300,16 @@ class Trainer(object):
             
         
         print("loss_total: ", loss_total)
-        return loss_total
+        rnd_number=randint(0, len(viewpoint_stack)-1)
+        viewpoint_cam = viewpoint_stack.pop(rnd_number)
+        render_pkg = render(viewpoint_cam, self.gaussian_net, pipe, bg,idx=rnd_number)
+        image, viewspace_point_tensor, visibility_filter, radii = render_pkg["render"], render_pkg["viewspace_points"], render_pkg["visibility_filter"], render_pkg["radii"]
 
+        
+        
+        return loss_total, viewspace_point_tensor, visibility_filter, radii
 
+# image, viewspace_point_tensor, visibility_filter, radii
 
             
 
