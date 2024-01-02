@@ -286,7 +286,7 @@ class Trainer(object):
             loss.backward()
             self.optimizer.step()
 
-            loss_total+=loss
+            loss_total+=loss.detach().item()
             
             
             torch.cuda.empty_cache()            
