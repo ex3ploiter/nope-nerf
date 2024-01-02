@@ -53,6 +53,11 @@ def rotate_vector_with_quaternion(vector, trans,quaternion):
         torch.cat((quaternion[0].unsqueeze(0), -quaternion[1:])),
     )[1:]  # Extract the vector part from the resulting quaternion
 
+    print("vector x : ",vector.shape)
+    print("rotated_vector_quaternion : ",rotated_vector_quaternion.shape)
+    print("trans : ",trans.shape)
+    
+    
     return rotated_vector_quaternion+trans
 
 
