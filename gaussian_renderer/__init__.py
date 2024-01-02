@@ -34,7 +34,7 @@ def rotate_vector_with_quaternion(vector, trans,quaternion):
     
     # vector_quaternion = torch.cat((torch.tensor([0.],device='cuda',requires_grad=True), vector))
     vector_quaternion = torch.cat((torch.zeros((vector.shape[0],1),device='cuda',requires_grad=True), vector),dim=1)
-    print("vector_quaternion ",vector_quaternion.requires_grad)
+    
 
     # Apply quaternion multiplication to rotate the vector
     rotated_vector_quaternion = quaternion_multiply(
@@ -47,6 +47,15 @@ def rotate_vector_with_quaternion(vector, trans,quaternion):
     
     
     return rotated_vector_quaternion+trans
+
+
+def rotate_quaternion_by_quaternion(quat_to_rotate, rotation_quaternion):
+    rotated_quaternion = quaternion_multiply(
+        quaternion_multiply(rotation_quaternion, quat_to_rotate),
+        torch.cat((rotation_quaternion[0].unsqueeze(0), -rotation_quaternion[1:])),
+    )  # Extract the quaternion part from the result
+
+    return rotated_quaternion
 
 
 def render(viewpoint_camera, pc : GaussianModel, pipe, bg_color : torch.Tensor, scaling_modifier = 1.0, override_color = None,idx=None):
@@ -225,7 +234,7 @@ def render_transform(viewpoint_camera, pc : GaussianModel, pipe, bg_color : torc
         colors_precomp = colors_precomp,
         opacities = opacity,
         scales = rotate_vector_with_quaternion(scales,trans,rot),
-        rotations = rotate_vector_with_quaternion(rotations,trans,rot),
+        rotations = rotate_quaternion_by_quaternion(rotations,rot),
         cov3D_precomp = cov3D_precomp)
 
     # Those Gaussians that were frustum culled or had a radius of 0 were not visible.
