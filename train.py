@@ -193,18 +193,8 @@ def train(cfg,dataset, opt, pipe):
             
     #         # -------------
 
+
     
-    local_rot=nn.Parameter(gaussian_net._rotation.requires_grad_(True))
-    local_trans=nn.Parameter(gaussian_net._scaling.requires_grad_(True))
-    
-    rot_trans_param = [
-        {'params': [local_rot], 'lr': 0.001, "name": "rot"},
-        {'params': [local_trans], 'lr': 0.001, "name": "trans"}
-    ]    
-    
-    
-    
-    optimizer_rot_trans = torch.optim.Adam(rot_trans_param, lr=0.1, eps=1e-15)
     
             
     epoch_it=0
@@ -216,7 +206,7 @@ def train(cfg,dataset, opt, pipe):
             gaussian_net.oneupSHdegree()
         bg = torch.rand((3), device="cuda") if opt.random_background else background
 
-        trainer.train_step_3dgsTransform(local_rot, local_trans,pipe=pipe,bg=bg,optimizer_rot_trans=optimizer_rot_trans)
+        trainer.train_step_3dgsTransform(pipe=pipe,bg=bg)
 
         epoch_it+=1
             

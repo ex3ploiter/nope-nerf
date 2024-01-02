@@ -490,15 +490,15 @@ class GaussianModel:
         self._scaling = optimizable_tensors["scaling"]
         self._rotation = optimizable_tensors["rotation"]
 
-        self.xyz_gradient_accum = torch.zeros((self.get_xyz.shape[0], 1), device="cuda")
-        self.denom = torch.zeros((self.get_xyz.shape[0], 1), device="cuda")
-        self.max_radii2D = torch.zeros((self.get_xyz.shape[0]), device="cuda")
+        self.xyz_gradient_accum = torch.zeros((self.get_xyz.shape[0],self.get_xyz.shape[1], 1), device="cuda")
+        self.denom = torch.zeros((self.get_xyz.shape[0],self.get_xyz.shape[1], 1), device="cuda")
+        self.max_radii2D = torch.zeros((self.get_xyz.shape[0],self.get_xyz.shape[1]), device="cuda")
 
     def densify_and_split(self, grads, grad_threshold, scene_extent, N=2):
         n_init_points = self.get_xyz.shape[0]
         # Extract points that satisfy the gradient condition
-        padded_grad = torch.zeros((n_init_points), device="cuda")
-        padded_grad[:grads.shape[0]] = grads.squeeze()
+        padded_grad = torch.zeros((self.get_xyz.shape[0],self.get_xyz.shape[1]), device="cuda")
+        padded_grad[:,:grads.shape[0]] = grads.squeeze()
         selected_pts_mask = torch.where(padded_grad >= grad_threshold, True, False)
         selected_pts_mask = torch.logical_and(selected_pts_mask,
                                               torch.max(self.get_scaling, dim=1).values > self.percent_dense*scene_extent)
