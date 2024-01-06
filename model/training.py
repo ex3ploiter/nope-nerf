@@ -254,7 +254,7 @@ class Trainer(object):
             
            
         
-        print("loss_total: ", loss_total)
+        # print("loss_total: ", loss_total)
         return loss_total
   
         
@@ -283,8 +283,8 @@ class Trainer(object):
             # image, _, _, _ = render_pkg["render"], render_pkg["viewspace_points"], render_pkg["visibility_filter"], render_pkg["radii"]
             
             
-            # transforms.ToPILImage()(gt_image).save('output_image1.png')
-            # transforms.ToPILImage()(image).save('output_image2.png')
+            transforms.ToPILImage()(gt_image).save('output_image1.png')
+            transforms.ToPILImage()(image).save('output_image2.png')
 
             Ll1=l1_loss(image, gt_image) 
             loss = (1.0 - 0.2) * Ll1 + 0.2 * (1.0 - ssim(image, gt_image))

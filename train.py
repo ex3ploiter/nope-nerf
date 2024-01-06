@@ -54,7 +54,7 @@ def train(cfg,dataset, opt, pipe):
         
     # resume training
     epoch_it = 0
-
+    progress_bar = tqdm(range(epoch_it, 10), desc="Training progress Local 3DGS")
     
     
 
@@ -84,7 +84,7 @@ def train(cfg,dataset, opt, pipe):
     
 
     
-    while epoch_it < (  scheduling_epoch):
+    while epoch_it < 10 :
         iteration=epoch_it
         gaussian_net.update_learning_rate(iteration)
         # Every 1000 its we increase the levels of SH up to a maximum degree
@@ -93,29 +93,13 @@ def train(cfg,dataset, opt, pipe):
         bg = torch.rand((3), device="cuda") if opt.random_background else background
 
         loss=trainer.train_step_singleview(pipe=pipe,bg=bg)
+        progress_bar.set_postfix({"Loss": f"{loss:.{7}f}"})
+        progress_bar.update(1)
+
 
         epoch_it+=1
         
-        # gaussian_net.save_ply(os.path.join("./point_cloud.ply"))
-
-        # with torch.no_grad():
-           
-        #     # Densification
-        #     if iteration < opt.densify_until_iter:
-        #         # Keep track of max radii in image-space for pruning
-        #         gaussian_net.max_radii2D[:,visibility_filter] = torch.max(gaussian_net.max_radii2D[:,visibility_filter], radii[visibility_filter])
-        #         gaussian_net.add_densification_stats(viewspace_point_tensor, visibility_filter)
-
-        #         if iteration > opt.densify_from_iter and iteration % opt.densification_interval == 0:
-        #             size_threshold = 20 if iteration > opt.opacity_reset_interval else None
-        #             gaussian_net.densify_and_prune(opt.densify_grad_threshold, 0.005, scene_net.cameras_extent, size_threshold)
-                
-        #         if iteration % opt.opacity_reset_interval == 0 or (dataset.white_background and iteration == opt.densify_from_iter):
-        #             gaussian_net.reset_opacity()
-
-            
-            
-            # -------------
+ 
         del  loss,viewspace_point_tensor, visibility_filter, radii
         torch.cuda.empty_cache()
 
@@ -123,7 +107,9 @@ def train(cfg,dataset, opt, pipe):
     
             
     epoch_it=0
-    while epoch_it < (  scheduling_epoch):
+    progress_bar = tqdm(range(epoch_it, 100), desc="Training progress Parameters 3DGS")
+    
+    while epoch_it < 10:
         iteration=epoch_it
         gaussian_net.update_learning_rate(iteration)
         # Every 1000 its we increase the levels of SH up to a maximum degree
@@ -131,9 +117,12 @@ def train(cfg,dataset, opt, pipe):
             gaussian_net.oneupSHdegree()
         bg = torch.rand((3), device="cuda") if opt.random_background else background
 
-        trainer.train_step_3dgsTransform(pipe=pipe,bg=bg)
+        loss=trainer.train_step_3dgsTransform(pipe=pipe,bg=bg)
 
         epoch_it+=1
+        
+        progress_bar.set_postfix({"Loss": f"{loss:.{7}f}"})
+        progress_bar.update(1)
         
     
     gaussian_net.save_transrot()
