@@ -26,7 +26,7 @@ from copy import deepcopy
 
 
 def train(cfg,dataset, opt, pipe):
-    logger_py = logging.getLogger(__name__)
+    
 
     # # Fix seeds
     np.random.seed(42)
@@ -36,53 +36,24 @@ def train(cfg,dataset, opt, pipe):
     device = torch.device("cuda" if is_cuda else "cpu")
 
     # params
-    out_dir = cfg['training']['out_dir']
-    backup_every = cfg['training']['backup_every']
     
-    lr = cfg['training']['learning_rate']
-
-    mode = cfg['training']['mode']
-    train_loader, train_dataset = dl.get_dataloader(cfg, mode=mode, shuffle=cfg['dataloading']['shuffle'])
-    test_loader, _ = dl.get_dataloader(cfg, mode=mode, shuffle=cfg['dataloading']['shuffle'])
-    iter_test = iter(test_loader)
-    data_test = next(iter_test)
+    
+    
     
 
-    n_views = train_dataset['img'].N_imgs
-    # init network
-    network_type = cfg['model']['network_type']
-    auto_scheduler = cfg['training']['auto_scheduler']
+    
+    
+    
     scheduling_epoch = cfg['training']['scheduling_epoch']
     
 
-    if network_type=='official':
-        model = mdl.OfficialStaticNerf(cfg)
     
-     # init renderer 
-    rendering_cfg = cfg['rendering']
-    renderer = mdl.Renderer(model, rendering_cfg, device=device)
-    # init model
-    nope_nerf = mdl.get_model(renderer, cfg, device=device)
-    # init optimizer
-    weight_decay = cfg['training']['weight_decay']
-    optimizer = optim.Adam(nope_nerf.parameters(), lr=lr, weight_decay=weight_decay)
+    
 
-    # init checkpoints and load
-    checkpoint_io = mdl.CheckpointIO(out_dir, model=nope_nerf, optimizer=optimizer)
-    load_dir = cfg['training']['load_dir']
 
-    try:
-        load_dict = checkpoint_io.load(load_dir, load_model_only=cfg['training']['load_ckpt_model_only'])
-    except FileExistsError:
-        load_dict = dict()
         
     # resume training
-    epoch_it = load_dict.get('epoch_it', -1)
-    it = load_dict.get('it', -1)
-    metric_val_best = load_dict.get(
-    'loss_val_best', -np.inf)
-    patient_count = load_dict.get('patient_count', 0)
-    scheduling_start = load_dict.get('scheduling_start', cfg['training']['scheduling_start'])
+    epoch_it = 0
 
     
     
@@ -98,19 +69,10 @@ def train(cfg,dataset, opt, pipe):
         bg_color = [1, 1, 1] if dataset.white_background else [0, 0, 0]
         background = torch.tensor(bg_color, dtype=torch.float32, device="cuda")
         
-
-        # optimizer_distortion = optim.Adam(distortion_net.parameters(), lr=cfg['training']['distortion_lr'])
-        # optimizer_guassian = optim.Adam(params=gaussian_net.parameters(), lr=cfg['training']['distortion_lr'])
-
         
 
-        epoch_it = load_dict.get('epoch_it', -1)
-        # if not auto_scheduler:
-        #     scheduler_distortion = torch.optim.lr_scheduler.MultiStepLR(optimizer_guassian, 
-        #                                                             milestones=list(range(scheduling_start, scheduling_epoch+scheduling_start, 100)),
-                                                                    # gamma=cfg['training']['scheduler_gamma_distortion'], last_epoch=epoch_it)
-
-    
+       
+     
 
    
    
@@ -120,48 +82,9 @@ def train(cfg,dataset, opt, pipe):
                         ,scene_net=scene_net)
 
     
-    
-
-    logger = SummaryWriter(os.path.join(out_dir, 'logs'))
-        
-    # init training output
-    print_every = cfg['training']['print_every']
-    checkpoint_every = cfg['training']['checkpoint_every']
-    visualize_every = cfg['training']['visualize_every']
-    validate_every = cfg['training']['validate_every']
-    eval_pose_every = cfg['training']['eval_pose_every']
-    eval_img_every = cfg['training']['eval_img_every']
-
-    render_path = os.path.join(out_dir, 'rendering')
-    if not os.path.exists(render_path):
-        os.makedirs(render_path)
-    
-
-
-    # Print model
-    nparameters = sum(p.numel() for p in nope_nerf.parameters())
-    logger_py.info(nope_nerf)
-    logger_py.info('Total number of parameters: %d' % nparameters)
-    t0b = time.time()
 
     
-    patient = cfg['training']['patient']
-    length_smooth=cfg['training']['length_smooth']
-    scheduling_mode = cfg['training']['scheduling_mode']
-    psnr_window = []
-
-    # torch.autograd.set_detect_anomaly(True)
-
-    log_scale_shift_per_view = cfg['training']['log_scale_shift_per_view']
-    scale_dict = {}
-    shift_dict = {}
-    # load gt poses for evaluation
-    if eval_pose_every>0:
-        gt_poses = train_dataset['img'].c2ws.to(device) 
-    # for epoch_it in tqdm(range(epoch_start+1, exit_after), desc='epochs'):
-    
-    
-    while epoch_it < (scheduling_start + scheduling_epoch):
+    while epoch_it < (  scheduling_epoch):
         iteration=epoch_it
         gaussian_net.update_learning_rate(iteration)
         # Every 1000 its we increase the levels of SH up to a maximum degree
@@ -200,7 +123,7 @@ def train(cfg,dataset, opt, pipe):
     
             
     epoch_it=0
-    while epoch_it < (scheduling_start + scheduling_epoch):
+    while epoch_it < (  scheduling_epoch):
         iteration=epoch_it
         gaussian_net.update_learning_rate(iteration)
         # Every 1000 its we increase the levels of SH up to a maximum degree
