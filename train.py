@@ -100,7 +100,7 @@ def train(cfg,dataset, opt, pipe):
         epoch_it+=1
         
  
-        del  loss,viewspace_point_tensor, visibility_filter, radii
+        del  loss
         torch.cuda.empty_cache()
 
     
