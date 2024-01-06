@@ -110,6 +110,7 @@ def train(cfg,dataset, opt, pipe):
         #                                                             milestones=list(range(scheduling_start, scheduling_epoch+scheduling_start, 100)),
                                                                     # gamma=cfg['training']['scheduler_gamma_distortion'], last_epoch=epoch_it)
 
+    
 
    
    
@@ -171,6 +172,8 @@ def train(cfg,dataset, opt, pipe):
         loss,viewspace_point_tensor, visibility_filter, radii=trainer.train_step_singleview(pipe=pipe,bg=bg)
 
         epoch_it+=1
+        
+        # gaussian_net.save_ply(os.path.join("./point_cloud.ply"))
 
         with torch.no_grad():
            
