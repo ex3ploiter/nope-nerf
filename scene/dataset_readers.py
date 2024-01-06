@@ -241,12 +241,12 @@ def readColmapSceneInfo(path, images, eval, llffhold=8):
 
     
     xyz_list=[]
-    shs_list=[]
+    rgb_list=[]
     
     for color_image,depth_map in zip(color_images,depth_maps):
         xyz,color_points=depth_map_to_point_cloud(depth_map,color_image,cam_intrinsics[1].params)
         xyz_list.append(xyz)
-        shs_list.append(color_points)
+        rgb_list.append(color_points)
         
         # break
         
@@ -259,12 +259,12 @@ def readColmapSceneInfo(path, images, eval, llffhold=8):
     
     
     normals=np.zeros((xyz_list.shape))    
-    pcd = BasicPointCloud(points=xyz_list, colors=(shs_list), normals=normals)
+    pcd = BasicPointCloud(points=xyz_list, colors=rgb_list, normals=normals)
         
 
 
-    # xyz = np.random.random((1,100_000, 3)) * 2.6 - 1.3
-    # shs = np.random.random((1,100_000, 3)) / 255.0
+    # xyz = np.random.random((depth_maps.shape[0],100_000, 3)) * 2.6 - 1.3
+    # shs = np.random.random((depth_maps.shape[0],100_000, 3)) / 255.0
     # normals=np.zeros((xyz.shape))    
     # pcd = BasicPointCloud(points=xyz, colors=SH2RGB(shs), normals=np.zeros((1,100_000, 3)))
         
