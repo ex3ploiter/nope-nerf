@@ -255,7 +255,7 @@ def readColmapSceneInfo(path, images, eval, llffhold=8):
         
         
     xyz_list=np.array(xyz_list)
-    shs_list=np.array(shs_list)
+    rgb_list=np.array(rgb_list)
     
     # xyz_list=select_random_points(xyz_list,100_000//2)
     # shs_list=select_random_points(shs_list,100_000//2)
