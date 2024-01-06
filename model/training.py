@@ -299,21 +299,9 @@ class Trainer(object):
             del render_pkg,Ll1,image,Cam1,gt_image,loss
             
         
-        print("loss_total: ", loss_total)
-        rnd_number=randint(0, len(viewpoint_stack)-1)
-        viewpoint_cam = viewpoint_stack.pop(rnd_number)
-        render_pkg = render(viewpoint_cam, self.gaussian_net, pipe, bg,idx=rnd_number)
-        image, viewspace_point_tensor, visibility_filter, radii = render_pkg["render"], render_pkg["viewspace_points"], render_pkg["visibility_filter"], render_pkg["radii"]
-        Ll1=l1_loss(image, viewpoint_cam.original_image.cuda()) 
-        loss = (1.0 - 0.2) * Ll1 + 0.2 * (1.0 - ssim(image, viewpoint_cam.original_image.cuda()))
-
-        loss.backward()
         
 
-
-        
-        
-        return loss_total, viewspace_point_tensor, visibility_filter, radii
+        return loss_total
 
 # image, viewspace_point_tensor, visibility_filter, radii
 
