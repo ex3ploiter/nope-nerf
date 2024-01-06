@@ -266,8 +266,8 @@ def readColmapSceneInfo(path, images, eval, llffhold=8):
         
 
 
-    # xyz = np.random.random((depth_maps.shape[0],100_000, 3)) * 2.6 - 1.3
-    # shs = np.random.random((depth_maps.shape[0],100_000, 3)) / 255.0
+    # xyz = np.random.random((depth_maps.shape[0],10_000, 3)) * 2.6 - 1.3
+    # shs = np.random.random((depth_maps.shape[0],10_000, 3)) / 255.0
     # normals=np.zeros((xyz.shape))    
     # pcd = BasicPointCloud(points=xyz, colors=SH2RGB(shs), normals=np.zeros((1,100_000, 3)))
         
@@ -282,7 +282,10 @@ def readColmapSceneInfo(path, images, eval, llffhold=8):
         #     xyz, rgb, _ = read_points3D_binary(bin_path)
         # except:
         #     xyz, rgb, _ = read_points3D_text(txt_path)
-    storePly(ply_path, xyz_list, (rgb_list))
+    try:
+        storePly(ply_path, xyz_list, (rgb_list))
+    except:
+        storePly(ply_path, xyz, SH2RGB(shs))
     
     # try:
     #     pcd = fetchPly(ply_path)

@@ -103,9 +103,9 @@ class Trainer(object):
     def train_step_singleview(self,pipe=None,bg=None):
 
         self.optimizer.zero_grad()
-        loss,viewspace_point_tensor, visibility_filter, radii=self.compute_loss_singleview( pipe=pipe,bg=bg)
+        loss=self.compute_loss_singleview( pipe=pipe,bg=bg)
         # return loss
-        return loss, viewspace_point_tensor, visibility_filter, radii
+        return loss
 
 
     def train_step_3dgsTransform(self,pipe=None,bg=None):
