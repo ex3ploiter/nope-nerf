@@ -322,6 +322,15 @@ class GaussianModel:
                 param_group['lr'] = lr
                 return lr
 
+    def save_transrot(self):
+        rotation_Local = self.rotation_Local.detach().cpu().numpy()
+        trans_Local = self.trans_Local.detach().cpu().numpy()
+        
+        with open('./Translate_Rotation.npy' ,'wb') as file:
+            np.save(file, np.concatenate((rotation_Local[None,...],trans_Local[None,...]),dim=0))
+        
+
+
     def construct_list_of_attributes(self):
         l = ['x', 'y', 'z', 'nx', 'ny', 'nz']
         # All channels except the 3 DC
@@ -334,7 +343,7 @@ class GaussianModel:
             l.append('scale_{}'.format(i))
         for i in range(self._rotation.shape[1]):
             l.append('rot_{}'.format(i))
-        return l
+        return l    
 
     def save_ply(self, path):
         mkdir_p(os.path.dirname(path))

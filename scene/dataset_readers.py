@@ -164,7 +164,7 @@ def load_depths_npz(image_list):
             depth = depth[0]
 
     
-    depths.append(depth)
+        depths.append(depth)
     depths = np.stack(depths)
    
     return depths

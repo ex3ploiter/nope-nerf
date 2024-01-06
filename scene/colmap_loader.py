@@ -13,6 +13,8 @@ import numpy as np
 import collections
 import struct
 
+# from utils.general_utils import build_rotation
+
 CameraModel = collections.namedtuple(
     "CameraModel", ["model_id", "model_name", "num_params"])
 Camera = collections.namedtuple(
@@ -211,6 +213,68 @@ def read_extrinsics_binary(path_to_model_file):
                 xys=xys, point3D_ids=point3D_ids)
     return images
 
+
+
+def read_extrinsics_binary_global(path_to_model_file):
+    """
+    see: src/base/reconstruction.cc
+        void Reconstruction::ReadImagesBinary(const std::string& path)
+        void Reconstruction::WriteImagesBinary(const std::string& path)
+    """
+    
+    params_tranform=np.load('./Translate_Rotation.npy')
+    transformation_matrix = np.eye(4)
+    
+    with open(path_to_model_file, "rb") as fid:
+        num_reg_images = read_next_bytes(fid, 8, "Q")[0]
+        for idx in range(num_reg_images):
+            qvec_main = np.array(binary_image_properties[1:5])
+            tvec_main = np.array(binary_image_properties[5:8])
+            break
+    
+    images = {}
+    with open(path_to_model_file, "rb") as fid:
+        num_reg_images = read_next_bytes(fid, 8, "Q")[0]
+        for idx in range(num_reg_images):
+            binary_image_properties = read_next_bytes(
+                fid, num_bytes=64, format_char_sequence="idddddddi")
+            image_id = binary_image_properties[0]
+            
+            # qvec = np.array(binary_image_properties[1:5])
+            rot_relative = params_tranform[0,idx]
+            # tvec = np.array(binary_image_properties[5:8])
+            trans_relative = params_tranform[1,idx]
+            
+            
+            transformation_matrix_temp = np.eye(4)
+            transformation_matrix_temp[:3, :3] = qvec2rotmat(rot_relative)
+            transformation_matrix_temp[:3, 3] = trans_relative
+            
+            transformation_matrix=np.matmul(transformation_matrix,transformation_matrix_temp)
+            
+            qvec=np.matmul(transformation_matrix,qvec_main)
+            tvec=np.matmul(transformation_matrix,tvec_main)
+            
+            
+            
+            camera_id = binary_image_properties[8]
+            image_name = ""
+            current_char = read_next_bytes(fid, 1, "c")[0]
+            while current_char != b"\x00":   # look for the ASCII 0 entry
+                image_name += current_char.decode("utf-8")
+                current_char = read_next_bytes(fid, 1, "c")[0]
+            num_points2D = read_next_bytes(fid, num_bytes=8,
+                                           format_char_sequence="Q")[0]
+            x_y_id_s = read_next_bytes(fid, num_bytes=24*num_points2D,
+                                       format_char_sequence="ddq"*num_points2D)
+            xys = np.column_stack([tuple(map(float, x_y_id_s[0::3])),
+                                   tuple(map(float, x_y_id_s[1::3]))])
+            point3D_ids = np.array(tuple(map(int, x_y_id_s[2::3])))
+            images[image_id] = Image(
+                id=image_id, qvec=qvec, tvec=tvec,
+                camera_id=camera_id, name=image_name,
+                xys=xys, point3D_ids=point3D_ids)
+    return images
 
 def read_intrinsics_binary(path_to_model_file):
     """
