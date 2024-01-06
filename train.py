@@ -107,22 +107,19 @@ def train(cfg,dataset, opt, pipe):
     
             
     epoch_it=0
-    progress_bar = tqdm(range(epoch_it, 100), desc="Training progress Parameters 3DGS")
+    progress_bar_param = tqdm(range(epoch_it, 100), desc="Training progress Parameters 3DGS")
     
-    while epoch_it < 10:
+    while epoch_it < 100:
         iteration=epoch_it
         gaussian_net.update_learning_rate(iteration)
         # Every 1000 its we increase the levels of SH up to a maximum degree
-        if iteration % 1000 == 0:
-            gaussian_net.oneupSHdegree()
         bg = torch.rand((3), device="cuda") if opt.random_background else background
-
         loss=trainer.train_step_3dgsTransform(pipe=pipe,bg=bg)
 
         epoch_it+=1
         
-        progress_bar.set_postfix({"Loss": f"{loss:.{7}f}"})
-        progress_bar.update(1)
+        progress_bar_param.set_postfix({"Loss": f"{loss:.{7}f}"})
+        progress_bar_param.update(1)
         
     
     gaussian_net.save_transrot()
