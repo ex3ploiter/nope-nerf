@@ -201,6 +201,10 @@ def select_random_points(array, num_points_to_select):
     selected_points = array[:, selected_indices, :]
     return selected_points
 
+
+
+
+
 def readColmapSceneInfo(path, images, eval, llffhold=8):
     try:
         cameras_extrinsic_file = os.path.join(path, "sparse/0", "images.bin")
@@ -243,31 +247,31 @@ def readColmapSceneInfo(path, images, eval, llffhold=8):
     color_images=load_gt_depths(color_images)    
 
     
-    xyz_list=[]
-    rgb_list=[]
+    # xyz_list=[]
+    # rgb_list=[]
     
-    for color_image,depth_map in zip(color_images,depth_maps):
-        xyz,color_points=depth_map_to_point_cloud(depth_map,color_image,cam_intrinsics[1].params)
-        xyz_list.append(xyz)
-        rgb_list.append(color_points)
+    # for color_image,depth_map in zip(color_images,depth_maps):
+    #     xyz,color_points=depth_map_to_point_cloud(depth_map,color_image,cam_intrinsics[1].params)
+    #     xyz_list.append(xyz)
+    #     rgb_list.append(color_points)
         
-        # break
+    #     # break
         
         
-    xyz_list=np.array(xyz_list)
-    rgb_list=np.array(rgb_list)
+    # xyz_list=np.array(xyz_list)
+    # rgb_list=np.array(rgb_list)
     
-    # xyz_list=select_random_points(xyz_list,100_000//2)
-    # shs_list=select_random_points(shs_list,100_000//2)
+    # # xyz_list=select_random_points(xyz_list,100_000//2)
+    # # shs_list=select_random_points(shs_list,100_000//2)
     
     
-    normals=np.zeros((xyz_list.shape))    
-    pcd = BasicPointCloud(points=xyz_list, colors=rgb_list, normals=normals)
+    # normals=np.zeros((xyz_list.shape))    
+    # pcd = BasicPointCloud(points=xyz_list, colors=rgb_list, normals=normals)
         
 
 
-    xyz = np.random.random((depth_maps.shape[0],10_000, 3)) * 2.6 - 1.3
-    shs = np.random.random((depth_maps.shape[0],10_000, 3)) / 255.0
+    xyz = np.random.random((depth_maps.shape[0],20_000, 3)) * 2.6 - 1.3
+    shs = np.random.random((depth_maps.shape[0],20_000, 3)) / 255.0
     normals=np.zeros((xyz.shape))    
     pcd = BasicPointCloud(points=xyz, colors=SH2RGB(shs), normals=np.zeros((1,100_000, 3)))
         
