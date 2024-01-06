@@ -266,10 +266,10 @@ def readColmapSceneInfo(path, images, eval, llffhold=8):
         
 
 
-    # xyz = np.random.random((depth_maps.shape[0],10_000, 3)) * 2.6 - 1.3
-    # shs = np.random.random((depth_maps.shape[0],10_000, 3)) / 255.0
-    # normals=np.zeros((xyz.shape))    
-    # pcd = BasicPointCloud(points=xyz, colors=SH2RGB(shs), normals=np.zeros((1,100_000, 3)))
+    xyz = np.random.random((depth_maps.shape[0],10_000, 3)) * 2.6 - 1.3
+    shs = np.random.random((depth_maps.shape[0],10_000, 3)) / 255.0
+    normals=np.zeros((xyz.shape))    
+    pcd = BasicPointCloud(points=xyz, colors=SH2RGB(shs), normals=np.zeros((1,100_000, 3)))
         
 
 

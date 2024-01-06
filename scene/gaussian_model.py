@@ -326,8 +326,14 @@ class GaussianModel:
         rotation_Local = self.rotation_Local.detach().cpu().numpy()
         trans_Local = self.trans_Local.detach().cpu().numpy()
         
-        with open('./Translate_Rotation.npy' ,'wb') as file:
-            np.save(file, np.concatenate((rotation_Local[None,...],trans_Local[None,...]),dim=0))
+        with open('./Translate.npy' ,'wb') as file:
+            np.save(file,trans_Local)
+
+        with open('./Rotation.npy' ,'wb') as file:
+            np.save(file,rotation_Local)
+
+
+            
         
 
 
