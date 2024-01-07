@@ -347,7 +347,7 @@ class GaussianModel:
         l.append('opacity')
         for i in range(self._scaling[idx].shape[1]):
             l.append('scale_{}'.format(i))
-        for i in range(self._rotatio[idx].shape[1]):
+        for i in range(self._rotation[idx].shape[1]):
             l.append('rot_{}'.format(i))
         return l    
 
