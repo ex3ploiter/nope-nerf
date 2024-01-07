@@ -89,7 +89,7 @@ def train(cfg,dataset, opt, pipe):
     
     progress_bar = tqdm(range(epoch_it, local_3dgs_epoch), desc="Training progress Local 3DGS")
 
-    
+    gaussian_net.save_ply_byFrames('./plyResults/initial_poly/')
     while epoch_it < local_3dgs_epoch :
         iteration=epoch_it
         gaussian_net.update_learning_rate(iteration)
@@ -111,7 +111,7 @@ def train(cfg,dataset, opt, pipe):
 
     
     
-            
+    gaussian_net.save_ply_byFrames('./plyResults/local_poly/')     
     epoch_it=0
     progress_bar_param = tqdm(range(epoch_it, param_epoch), desc="Training progress Parameters 3DGS")
     
@@ -129,6 +129,8 @@ def train(cfg,dataset, opt, pipe):
         
     
     gaussian_net.save_transrot()
+    
+    
             
 
       

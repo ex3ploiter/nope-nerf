@@ -372,7 +372,7 @@ class GaussianModel:
         
     def save_ply_byFrames(self,path):
         for idx in range(self._xyz.shape[0]):
-            self.save_ply(path,idx)
+            self.save_ply(os.path.join(path,f'{idx}.ply'),idx)
         
 
     def reset_opacity(self):
