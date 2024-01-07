@@ -190,8 +190,12 @@ def read_extrinsics_binary(path_to_model_file):
             binary_image_properties = read_next_bytes(
                 fid, num_bytes=64, format_char_sequence="idddddddi")
             image_id = binary_image_properties[0]
-            qvec = np.array(binary_image_properties[1:5])
-            tvec = np.array(binary_image_properties[5:8])
+            # qvec = np.array(binary_image_properties[1:5])
+            # tvec = np.array(binary_image_properties[5:8])
+            
+            qvec=rotmat2qvec(np.eye(3))
+            tvec=np.eye(4)[:,-1].squeeze()
+            
             camera_id = binary_image_properties[8]
             image_name = ""
             current_char = read_next_bytes(fid, 1, "c")[0]
