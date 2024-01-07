@@ -83,7 +83,7 @@ def train(cfg,dataset, opt, pipe):
 
     
     
-    local_3dgs_epoch=10
+    local_3dgs_epoch=50
     param_epoch=100
     
     
