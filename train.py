@@ -54,7 +54,7 @@ def train(cfg,dataset, opt, pipe):
         
     # resume training
     epoch_it = 0
-    progress_bar = tqdm(range(epoch_it, 10), desc="Training progress Local 3DGS")
+    
     
     
 
@@ -82,9 +82,15 @@ def train(cfg,dataset, opt, pipe):
                         ,scene_net=scene_net)
 
     
+    
+    local_3dgs_epoch=10
+    param_epoch=100
+    
+    
+    progress_bar = tqdm(range(epoch_it, local_3dgs_epoch), desc="Training progress Local 3DGS")
 
     
-    while epoch_it < 10 :
+    while epoch_it < local_3dgs_epoch :
         iteration=epoch_it
         gaussian_net.update_learning_rate(iteration)
         # Every 1000 its we increase the levels of SH up to a maximum degree
@@ -107,9 +113,9 @@ def train(cfg,dataset, opt, pipe):
     
             
     epoch_it=0
-    progress_bar_param = tqdm(range(epoch_it, 100), desc="Training progress Parameters 3DGS")
+    progress_bar_param = tqdm(range(epoch_it, param_epoch), desc="Training progress Parameters 3DGS")
     
-    while epoch_it < 100:
+    while epoch_it < param_epoch:
         iteration=epoch_it
         gaussian_net.update_learning_rate(iteration)
         # Every 1000 its we increase the levels of SH up to a maximum degree
