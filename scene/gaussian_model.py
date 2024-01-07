@@ -357,7 +357,7 @@ class GaussianModel:
         xyz = self._xyz[idx].detach().cpu().numpy()
         normals = np.zeros_like(xyz)
         f_dc = self._features_dc[idx].detach().transpose(1, 2).flatten(start_dim=1).contiguous().cpu().numpy()
-        f_rest = self._features_res[idx].detach().transpose(1, 2).flatten(start_dim=1).contiguous().cpu().numpy()
+        f_rest = self._features_rest[idx].detach().transpose(1, 2).flatten(start_dim=1).contiguous().cpu().numpy()
         opacities = self._opacity[idx].detach().cpu().numpy()
         scale = self._scaling[idx].detach().cpu().numpy()
         rotation = self._rotation[idx].detach().cpu().numpy()
