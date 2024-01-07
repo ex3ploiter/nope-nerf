@@ -194,7 +194,7 @@ def read_extrinsics_binary(path_to_model_file):
             # tvec = np.array(binary_image_properties[5:8])
             
             qvec=rotmat2qvec(np.eye(3))
-            tvec=np.eye(4)[:,-1].squeeze()
+            tvec=np.zeros((3,1)).squeeze()
             
             camera_id = binary_image_properties[8]
             image_name = ""
