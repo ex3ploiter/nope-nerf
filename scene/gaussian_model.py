@@ -362,7 +362,7 @@ class GaussianModel:
         scale = self._scaling[idx].detach().cpu().numpy()
         rotation = self._rotation[idx].detach().cpu().numpy()
 
-        dtype_full = [(attribute, 'f4') for attribute in self.construct_list_of_attributes()]
+        dtype_full = [(attribute, 'f4') for attribute in self.construct_list_of_attributes(idx)]
 
         elements = np.empty(xyz.shape[0], dtype=dtype_full)
         attributes = np.concatenate((xyz, normals, f_dc, f_rest, opacities, scale, rotation), axis=1)
